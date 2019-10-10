@@ -18,6 +18,11 @@ sudo cpupower --cpu all frequency-set --governor performance
 
 ### Benchmarking
 
+**Prerequisites:**
+
+* matplotlib
+* pandas
+
 ```
 make
 ```
