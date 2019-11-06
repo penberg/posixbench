@@ -9,4 +9,4 @@ static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 		pthread_mutex_unlock(&lock); \
 	} while (0)
 
-#include "benchmark.h"
+#include "mt-benchmark.h"

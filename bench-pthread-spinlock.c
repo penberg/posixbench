@@ -18,4 +18,4 @@ static void init(void)
 		pthread_spin_unlock(&lock); \
 	} while (0)
 
-#include "benchmark.h"
+#include "mt-benchmark.h"

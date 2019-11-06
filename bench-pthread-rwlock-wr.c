@@ -9,4 +9,4 @@ static pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 		pthread_rwlock_unlock(&lock); \
 	} while (0)
 
-#include "benchmark.h"
+#include "mt-benchmark.h"

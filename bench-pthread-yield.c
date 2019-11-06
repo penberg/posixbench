@@ -1,3 +1,3 @@
 #define BENCHMARK_ACTION() pthread_yield()
 
-#include "benchmark.h"
+#include "mt-benchmark.h"

@@ -1,3 +1,3 @@
 #define BENCHMARK_ACTION()
 
-#include "benchmark.h"
+#include "mt-benchmark.h"
