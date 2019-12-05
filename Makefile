@@ -4,6 +4,7 @@ BENCHMARKS += bench-pthread-mutex
 BENCHMARKS += bench-pthread-rwlock-rd
 BENCHMARKS += bench-pthread-rwlock-wr
 BENCHMARKS += bench-pthread-spinlock
+BENCHMARKS += bench-pagefault
 
 all: $(BENCHMARKS)
 

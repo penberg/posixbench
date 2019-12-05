@@ -24,3 +24,6 @@ target_link_libraries(bench-pthread-rwlock-wr ${LIBS})
 
 add_executable(bench-pthread-spinlock bench-pthread-spinlock.c)
 target_link_libraries(bench-pthread-spinlock ${LIBS})
+
+add_executable(bench-pagefault bench-pagefault.c)
+target_link_libraries(bench-pagefault ${LIBS})
