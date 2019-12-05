@@ -8,11 +8,16 @@ BENCHMARKS += bench-pthread-spinlock
 BENCHMARKS += bench-pagefault
 BENCHMARKS += bench-eventfd
 
+CPU_MODEL=$(shell scripts/cpuinfo.sh)
+
+RESULTS=results/$(CPU_MODEL)
+
 all: $(BENCHMARKS)
 
 $(BENCHMARKS): build
-	./build/$@ > results/$@.csv
-	./plot.py results/$@.csv
+	mkdir -p "$(RESULTS)"
+	./build/$@ > "$(RESULTS)/$@.csv"
+	./plot.py "$(RESULTS)/$@.csv"
 
 build:
 	@git submodule update --init --force --recursive
