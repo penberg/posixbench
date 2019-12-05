@@ -7,6 +7,9 @@ add_subdirectory(HdrHistogram_c)
 
 add_compile_options(-Wall -Wextra -Wno-unused -O2)
 
+add_executable(bench-yield bench-yield.c)
+target_link_libraries(bench-yield ${LIBS})
+
 add_executable(bench-pthread-nop bench-pthread-nop.c)
 target_link_libraries(bench-pthread-nop ${LIBS})
 

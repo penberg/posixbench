@@ -1,3 +1,4 @@
+BENCHMARKS += bench-yield
 BENCHMARKS += bench-pthread-nop
 BENCHMARKS += bench-pthread-yield
 BENCHMARKS += bench-pthread-mutex
