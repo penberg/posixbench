@@ -27,3 +27,6 @@ target_link_libraries(bench-pthread-spinlock ${LIBS})
 
 add_executable(bench-pagefault bench-pagefault.c)
 target_link_libraries(bench-pagefault ${LIBS})
+
+add_executable(bench-eventfd bench-eventfd.c)
+target_link_libraries(bench-eventfd ${LIBS})
