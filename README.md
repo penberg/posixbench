@@ -24,7 +24,8 @@ sudo cpupower --cpu all frequency-set --governor performance
 * pandas
 
 ```
-make
+make build
+make bench
 ```
 
 ## Benchmark Results
