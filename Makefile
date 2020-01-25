@@ -29,7 +29,7 @@ all: build
 
 build:
 	@git submodule update --init --force --recursive
-	@mkdir -p build && cmake -S . -B build && make --quiet --directory build
+	@mkdir -p build && cd build && cmake .. && make --quiet
 .PHONY: build
 
 bench: $(BENCHMARKS)
