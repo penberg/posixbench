@@ -1,0 +1,57 @@
+<h2 id="posix-benchmark-results">POSIX Benchmark Results</h2>
+<h3 id="retrieve-current-time">Retrieve current time</h3>
+<p>The time between two consecutive executions of <code>clock_gettime</code> without doing anything.</p>
+<p>This benchmark shows the baseline measurement overhead.</p>
+<figure>
+<img src="bench-gettime.png" alt="pthread-gettime" /><figcaption>pthread-gettime</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-gettime.cpp">Benchmark</a>] [<a href="bench-gettime.csv">CSV</a>]</p>
+<h3 id="yield-the-processor-process">Yield the processor (process)</h3>
+<p>The time it takes for a process to run again after yielding the processor with <code>pthread_yield</code>.</p>
+<figure>
+<img src="bench-yield.png" alt="pthread-yield" /><figcaption>pthread-yield</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-yield.c">Benchmark</a>] [<a href="bench-yield.csv">CSV</a>]</p>
+<h3 id="yield-the-processor-thread">Yield the processor (thread)</h3>
+<p>The time it takes for a thread to run again after yielding the processor with <code>pthread_yield</code>.</p>
+<figure>
+<img src="bench-pthread-yield.png" alt="pthread-yield" /><figcaption>pthread-yield</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master//bench-pthread-yield.c">Benchmark</a>] [<a href="bench-pthread-yield.csv">CSV</a>]</p>
+<h3 id="acquire-and-release-a-mutex">Acquire and release a mutex</h3>
+<p>The time it takes for a thread to acquire and release a mutex that is under contention.</p>
+<figure>
+<img src="bench-pthread-mutex.png" alt="pthread-mutex" /><figcaption>pthread-mutex</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master//bench-pthread-mutex.c">Benchmark</a>] [<a href="bench-pthread-mutex.csv">CSV</a>]</p>
+<h3 id="acquire-and-release-a-rwlock">Acquire and release a rwlock</h3>
+<h3 id="read-lock">Read lock</h3>
+<p>The time it takes for a thread to acquire and release a rwlock that is under contention for <em>reading</em>.</p>
+<figure>
+<img src="bench-pthread-rwlock-rd.png" alt="pthread-rwlock" /><figcaption>pthread-rwlock</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master//bench-pthread-rwlock-rd.c">Benchmark</a>] [<a href="bench-pthread-rwlock-rd.csv">CSV</a>]</p>
+<h3 id="write-lock">Write lock</h3>
+<p>The time it takes for a thread to acquire and release a rwlock that is under contention for <em>writing</em>.</p>
+<figure>
+<img src="bench-pthread-rwlock-wr.png" alt="pthread-rwlock" /><figcaption>pthread-rwlock</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master//bench-pthread-rwlock-wr.c">Benchmark</a>] [<a href="bench-pthread-rwlock-wr.csv">CSV</a>]</p>
+<h3 id="acquire-and-release-a-spinlock">Acquire and release a spinlock</h3>
+<p>The time it takes for a thread to acquire and release a spinlock that is under contention.</p>
+<figure>
+<img src="bench-pthread-spinlock.png" alt="pthread-spinlock" /><figcaption>pthread-spinlock</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master//bench-pthread-spinlock.c">Benchmark</a>] [<a href="bench-pthread-spinlock.csv">CSV</a>]</p>
+<h3 id="page-fault">Page fault</h3>
+<p>The time it takes for a thread to take a page fault.</p>
+<figure>
+<img src="bench-pagefault.png" alt="pthread-pagefault" /><figcaption>pthread-pagefault</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-pagefault.c">Benchmark</a>] [<a href="bench-pagefault.csv">CSV</a>]</p>
+<h3 id="thread-notification-eventfd">Thread notification (eventfd)</h3>
+<p>The time it takes for a thread to wake up when another thread notifies it via eventfd.</p>
+<figure>
+<img src="bench-eventfd.png" alt="pthread-eventfd" /><figcaption>pthread-eventfd</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-eventfd.c">Benchmark</a>] [<a href="bench-eventfd.csv">CSV</a>]</p>

@@ -1,12 +1,14 @@
 ## POSIX Benchmark Results
 
-### No operation 
+### Retrieve current time
 
-The time to do nothing. This benchmark shows the baseline measurement overhead.
+The time between two consecutive executions of `clock_gettime` without doing anything.
 
-![pthread-nop](bench-pthread-nop.png)
+This benchmark shows the baseline measurement overhead.
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master//bench-pthread-nop.c)] [[CSV](bench-pthread-nop.csv)]
+![pthread-gettime](bench-gettime.png)
+
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-gettime.cpp)] [[CSV](bench-gettime.csv)]
 
 ### Yield the processor (process)
 
@@ -57,6 +59,14 @@ The time it takes for a thread to acquire and release a spinlock that is under c
 ![pthread-spinlock](bench-pthread-spinlock.png)
 
 [[Benchmark](https://github.com/penberg/posixbench/blob/master//bench-pthread-spinlock.c)] [[CSV](bench-pthread-spinlock.csv)]
+
+### Page fault
+
+The time it takes for a thread to take a page fault.
+
+![pthread-pagefault](bench-pagefault.png)
+
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pagefault.c)] [[CSV](bench-pagefault.csv)]
 
 ### Thread notification (eventfd)
 

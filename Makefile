@@ -8,8 +8,7 @@ else
 endif
 export E Q
 
-BENCHMARKS += bench-yield
-BENCHMARKS += bench-pthread-nop
+BENCHMARKS += bench-gettime
 BENCHMARKS += bench-pthread-yield
 BENCHMARKS += bench-pthread-mutex
 BENCHMARKS += bench-pthread-rwlock-rd
@@ -34,6 +33,7 @@ build:
 
 bench: $(BENCHMARKS)
 	$(Q) cp "$(RESULTS_TEMPLATE)/README.md" "$(RESULTS_OUT)/"
+	$(Q) cp "$(RESULTS_TEMPLATE)/README.html" "$(RESULTS_OUT)/"
 .PHONY: bench
 
 $(BENCHMARKS):

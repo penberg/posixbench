@@ -14,8 +14,6 @@ args = parser.parse_args()
 
 df = pd.read_csv(args.filename, delimiter=',', header=0)
 df = df.loc[df['percentile'] <= 99]
-df = df.loc[df['threadspercpu'] == 1]
-df['scenario'] = df[['cpus', 'threadspercpu']].apply(lambda x: "%2d CPUs" % (x[0]), axis=1)
 df['time'] = df['time'] / 1000
 
 plt.style.use('seaborn-ticks')
