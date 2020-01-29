@@ -27,8 +27,3 @@ sudo cpupower --cpu all frequency-set --governor performance
 make build
 make bench
 ```
-
-## Benchmark Results
-
-* [Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz](results/intel/core-i7-4790/README.md) (circa 2014)
-* [Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz](results/intel/core-i7-8565U/README.md) (circa 2019)
