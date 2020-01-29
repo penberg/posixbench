@@ -2,7 +2,7 @@
 
 #include <sys/mman.h>
 
-const size_t size = 1024 * 1024; /* 1 MB */
+const size_t size = 1024 * 1024 * 1024; /* 1 GB */
 const size_t page_size = 4096;
 const size_t nr_pages = size / page_size;
 
