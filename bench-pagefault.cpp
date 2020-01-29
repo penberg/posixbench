@@ -15,6 +15,7 @@ struct State {
                                           MAP_ANONYMOUS | MAP_PRIVATE, -1,
                                           0))} {
     assert(p != MAP_FAILED);
+    assert(madvise(p, size, MADV_NOHUGEPAGE) == 0);
   }
 
   ~State() { ::munmap(p, size); }
