@@ -1,3 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>README</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
 <h2 id="posix-benchmark-results">POSIX Benchmark Results</h2>
 <h3 id="retrieve-current-time">Retrieve current time</h3>
 <p>The time between two consecutive executions of <code>clock_gettime</code> without doing anything.</p>
@@ -12,6 +30,12 @@
 <img src="bench-yield.png" alt="pthread-yield" /><figcaption>pthread-yield</figcaption>
 </figure>
 <p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-yield.c">Benchmark</a>] [<a href="bench-yield.csv">CSV</a>]</p>
+<h3 id="create-a-thread">Create a thread</h3>
+<p>The time it takes for a new thread to run for the first time, which approximates the time to create a new thread.</p>
+<figure>
+<img src="bench-pthread-create.png" alt="pthread-create" /><figcaption>pthread-create</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-pthread-create.cpp">Benchmark</a>] [<a href="bench-pthread-create.csv">CSV</a>]</p>
 <h3 id="yield-the-processor-thread">Yield the processor (thread)</h3>
 <p>The time it takes for a thread to run again after yielding the processor with <code>pthread_yield</code>.</p>
 <figure>
@@ -55,3 +79,5 @@
 <img src="bench-eventfd.png" alt="pthread-eventfd" /><figcaption>pthread-eventfd</figcaption>
 </figure>
 <p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-eventfd.c">Benchmark</a>] [<a href="bench-eventfd.csv">CSV</a>]</p>
+</body>
+</html>

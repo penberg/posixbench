@@ -18,6 +18,14 @@ The time it takes for a process to run again after yielding the processor with `
 
 [[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-yield.c)] [[CSV](bench-yield.csv)]
 
+### Create a thread
+
+The time it takes for a new thread to run for the first time, which approximates the time to create a new thread.
+
+![pthread-create](bench-pthread-create.png)
+
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pthread-create.cpp)] [[CSV](bench-pthread-create.csv)]
+
 ### Yield the processor (thread)
 
 The time it takes for a thread to run again after yielding the processor with `pthread_yield`.

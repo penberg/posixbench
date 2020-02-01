@@ -8,6 +8,9 @@ add_subdirectory(HdrHistogram_c)
 
 add_compile_options(-Wall -Wextra -Wno-unused -O2 -std=c++17 -g)
 
+add_executable(bench-pthread-create bench-pthread-create.cpp)
+target_link_libraries(bench-pthread-create ${LIBS})
+
 add_executable(bench-pthread-yield bench-pthread-yield.cpp)
 target_link_libraries(bench-pthread-yield ${LIBS})
 
