@@ -73,11 +73,17 @@
 <img src="bench-pagefault.png" alt="pthread-pagefault" /><figcaption>pthread-pagefault</figcaption>
 </figure>
 <p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-pagefault.c">Benchmark</a>] [<a href="bench-pagefault.csv">CSV</a>]</p>
-<h3 id="thread-notification-eventfd">Thread notification (eventfd)</h3>
+<h3 id="thread-notification-eventfd-blocking">Thread notification (eventfd, blocking)</h3>
 <p>The time it takes for a thread to wake up when another thread notifies it via eventfd.</p>
 <figure>
 <img src="bench-eventfd.png" alt="pthread-eventfd" /><figcaption>pthread-eventfd</figcaption>
 </figure>
 <p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-eventfd.c">Benchmark</a>] [<a href="bench-eventfd.csv">CSV</a>]</p>
+<h3 id="thread-notification-eventfd-non-blocking">Thread notification (eventfd, non-blocking)</h3>
+<p>The time it takes for a thread to wake up when another thread notifies it via eventfd using <code>EFD_NONBLOCK</code>.</p>
+<figure>
+<img src="bench-eventfd-nonblock.png" alt="pthread-eventfd-nonblock" /><figcaption>pthread-eventfd-nonblock</figcaption>
+</figure>
+<p>[<a href="https://github.com/penberg/posixbench/blob/master/bench-eventfd-nonblock.cpp">Benchmark</a>] [<a href="bench-eventfd-nonblock.csv">CSV</a>]</p>
 </body>
 </html>

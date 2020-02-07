@@ -17,6 +17,7 @@ BENCHMARKS += bench-pthread-rwlock-wr
 BENCHMARKS += bench-pthread-spinlock
 BENCHMARKS += bench-pagefault
 BENCHMARKS += bench-eventfd
+BENCHMARKS += bench-eventfd-nonblock
 
 OS=$(shell uname -s)
 CPU=$(shell scripts/cpuinfo.sh)

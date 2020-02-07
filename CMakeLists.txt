@@ -34,3 +34,6 @@ target_link_libraries(bench-pagefault ${LIBS})
 
 add_executable(bench-eventfd bench-eventfd.cpp)
 target_link_libraries(bench-eventfd ${LIBS})
+
+add_executable(bench-eventfd-nonblock bench-eventfd-nonblock.cpp)
+target_link_libraries(bench-eventfd-nonblock ${LIBS})

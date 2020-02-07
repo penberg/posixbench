@@ -76,10 +76,18 @@ The time it takes for a thread to take a page fault.
 
 [[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pagefault.c)] [[CSV](bench-pagefault.csv)]
 
-### Thread notification (eventfd)
+### Thread notification (eventfd, blocking)
 
 The time it takes for a thread to wake up when another thread notifies it via eventfd.
 
 ![pthread-eventfd](bench-eventfd.png)
 
 [[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-eventfd.c)] [[CSV](bench-eventfd.csv)]
+
+### Thread notification (eventfd, non-blocking)
+
+The time it takes for a thread to wake up when another thread notifies it via eventfd using `EFD_NONBLOCK`.
+
+![pthread-eventfd-nonblock](bench-eventfd-nonblock.png)
+
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-eventfd-nonblock.cpp)] [[CSV](bench-eventfd-nonblock.csv)]
