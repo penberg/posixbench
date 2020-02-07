@@ -16,7 +16,7 @@ The time it takes for a process to run again after yielding the processor with `
 
 ![pthread-yield](bench-yield.png)
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-yield.c)] [[CSV](bench-yield.csv)]
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-yield.cpp)] [[CSV](bench-yield.csv)]
 
 ### Create a thread
 
@@ -32,7 +32,7 @@ The time it takes for a thread to run again after yielding the processor with `p
 
 ![pthread-yield](bench-pthread-yield.png)
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master//bench-pthread-yield.c)] [[CSV](bench-pthread-yield.csv)]
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pthread-yield.cpp)] [[CSV](bench-pthread-yield.csv)]
 
 ### Acquire and release a mutex
 
@@ -40,7 +40,7 @@ The time it takes for a thread to acquire and release a mutex that is under cont
 
 ![pthread-mutex](bench-pthread-mutex.png)
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master//bench-pthread-mutex.c)] [[CSV](bench-pthread-mutex.csv)]
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pthread-mutex.cpp)] [[CSV](bench-pthread-mutex.csv)]
 
 ### Acquire and release a rwlock
 
@@ -50,7 +50,7 @@ The time it takes for a thread to acquire and release a rwlock that is under con
 
 ![pthread-rwlock](bench-pthread-rwlock-rd.png)
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master//bench-pthread-rwlock-rd.c)] [[CSV](bench-pthread-rwlock-rd.csv)]
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pthread-rwlock-rd.cpp)] [[CSV](bench-pthread-rwlock-rd.csv)]
 
 ### Write lock
 
@@ -58,7 +58,7 @@ The time it takes for a thread to acquire and release a rwlock that is under con
 
 ![pthread-rwlock](bench-pthread-rwlock-wr.png)
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master//bench-pthread-rwlock-wr.c)] [[CSV](bench-pthread-rwlock-wr.csv)]
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pthread-rwlock-wr.cpp)] [[CSV](bench-pthread-rwlock-wr.csv)]
 
 ### Acquire and release a spinlock
 
@@ -66,7 +66,7 @@ The time it takes for a thread to acquire and release a spinlock that is under c
 
 ![pthread-spinlock](bench-pthread-spinlock.png)
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master//bench-pthread-spinlock.c)] [[CSV](bench-pthread-spinlock.csv)]
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pthread-spinlock.cpp)] [[CSV](bench-pthread-spinlock.csv)]
 
 ### Page fault
 
@@ -74,7 +74,7 @@ The time it takes for a thread to take a page fault.
 
 ![pthread-pagefault](bench-pagefault.png)
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pagefault.c)] [[CSV](bench-pagefault.csv)]
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pagefault.cpp)] [[CSV](bench-pagefault.csv)]
 
 ### Thread notification (eventfd, blocking)
 
@@ -82,7 +82,7 @@ The time it takes for a thread to wake up when another thread notifies it via ev
 
 ![pthread-eventfd](bench-eventfd.png)
 
-[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-eventfd.c)] [[CSV](bench-eventfd.csv)]
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-eventfd.cpp)] [[CSV](bench-eventfd.csv)]
 
 ### Thread notification (eventfd, non-blocking)
 
