@@ -109,7 +109,7 @@ static void signal_handler(int signum) {
 }
 
 template <class Action>
-class Benchmark {
+class LatencyBenchmark {
   std::list<std::thread> _threads;
 
  public:
@@ -238,18 +238,18 @@ class Benchmark {
 };
 
 template <typename T, size_t nr_iter>
-static void run_scenario(Scenario scenario) {
+static void run_latency_benchmark(Scenario scenario) {
   Config cfg;
   cfg.nr_iter = nr_iter;
   cfg.scenario = scenario;
-  Benchmark<T> benchmark;
+  LatencyBenchmark<T> benchmark;
   benchmark.run(cfg);
 }
 
 template <typename T, size_t nr_iter = 1000000>
 static void run_all() {
   printf("scenario,percentile,time\n");
-  run_scenario<T, nr_iter>(REMOTE_PACKAGE);
-  run_scenario<T, nr_iter>(REMOTE_CORE);
-  run_scenario<T, nr_iter>(LOCAL_CORE);
+  run_latency_benchmark<T, nr_iter>(REMOTE_PACKAGE);
+  run_latency_benchmark<T, nr_iter>(REMOTE_CORE);
+  run_latency_benchmark<T, nr_iter>(LOCAL_CORE);
 }
