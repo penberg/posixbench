@@ -39,11 +39,11 @@ enum Scenario {
 static const char *to_string(Scenario scenario) {
   switch (scenario) {
     case REMOTE_PACKAGE:
-      return "Remote package";
+      return "NUMA";
     case REMOTE_CORE:
-      return "Remote core";
+      return "Multicore";
     case LOCAL_CORE:
-      return "Local core";
+      return "SMT";
   }
   assert(0);
 }
