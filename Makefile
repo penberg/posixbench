@@ -37,15 +37,18 @@ build:
 .PHONY: build
 
 bench: $(BENCHMARKS)
-	$(E) "  GEN     " $(REPORT)
-	$(Q) UNAME="$(shell uname -a)" CPUINFO="$(shell ./scripts/cpuinfo.sh)" envsubst < posixbench-report.md.in > "$(RESULTS_OUT)/$(REPORT)"
 .PHONY: bench
 
 $(BENCHMARKS):
 	$(E) "  BENCH   " $@
 	$(Q) mkdir -p "$(RESULTS_OUT)"
 	$(Q)./build/$@ > "$(RESULTS_OUT)/$@.csv"
-	$(Q)./plot.py "$(RESULTS_OUT)/$@.csv"
+
+report:
+	$(E) "  GEN     " $(REPORT)
+	$(Q) UNAME="$(shell uname -a)" CPUINFO="$(shell ./scripts/cpuinfo.sh)" envsubst < posixbench-report.md.in > "$(RESULTS_OUT)/$(REPORT)"
+	$(Q) $(foreach benchmark,$(BENCHMARKS),./plot.py "$(RESULTS_OUT)/$(benchmark).csv";)
+.PHONY: report
 
 tarball: $(TARBALL)
 .PHONY: tarball
