@@ -28,7 +28,7 @@ REPORT=posixbench-report.md
 
 TARBALL=posixbench.tar.gz
 
-all: build
+all: build bench report
 .PHONY: all
 
 build:
