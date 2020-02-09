@@ -47,7 +47,7 @@ $(BENCHMARKS):
 report:
 	$(E) "  GEN     " $(REPORT)
 	$(Q) UNAME="$(shell uname -a)" CPUINFO="$(shell ./scripts/cpuinfo.sh)" envsubst < posixbench-report.md.in > "$(RESULTS_OUT)/$(REPORT)"
-	$(Q) $(foreach benchmark,$(BENCHMARKS),./plot.py "$(RESULTS_OUT)/$(benchmark).csv";)
+	$(Q) $(foreach benchmark,$(BENCHMARKS),./scripts/plot-latency.py "$(RESULTS_OUT)/$(benchmark).csv";)
 .PHONY: report
 
 tarball: $(TARBALL)
