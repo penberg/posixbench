@@ -25,6 +25,8 @@ CPU=$(shell scripts/cpuinfo.sh)
 RESULTS_OUT=results/$(OS)/$(CPU)
 RESULTS_TEMPLATE=results/template
 
+TARBALL=posixbench.tar.gz
+
 all: build
 .PHONY: all
 
@@ -43,3 +45,10 @@ $(BENCHMARKS):
 	$(Q) mkdir -p "$(RESULTS_OUT)"
 	$(Q)./build/$@ > "$(RESULTS_OUT)/$@.csv"
 	$(Q)./plot.py "$(RESULTS_OUT)/$@.csv"
+
+tarball: $(TARBALL)
+.PHONY: tarball
+
+$(TARBALL):
+	$(E) "  TAR     " $@
+	$(Q) tar -czf "$@" "$(RESULTS_OUT)"
