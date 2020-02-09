@@ -18,7 +18,7 @@ struct Op {
   }
 };
 
-int main() {
+int main(int argc, char *argv[]) {
   init();
-  run_all<SymmetricAction<Op>>();
+  run_all<SymmetricAction<Op>>(argc, argv);
 }

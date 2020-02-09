@@ -4,4 +4,6 @@ struct Op {
   void operator()() { pthread_yield(); }
 };
 
-int main() { run_all<SymmetricAction<Op>>(); }
+int main(int argc, char *argv[]) {
+  run_all<SymmetricAction<Op>>(argc, argv);
+}

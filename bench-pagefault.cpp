@@ -30,4 +30,6 @@ struct Op {
   }
 };
 
-int main() { run_all<SymmetricActionWithState<Op, State>, nr_pages>(); }
+int main(int argc, char *argv[]) {
+  run_all<SymmetricActionWithState<Op, State>, nr_pages>(argc, argv);
+}

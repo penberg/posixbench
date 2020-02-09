@@ -32,4 +32,6 @@ struct Action {
   }
 };
 
-int main() { run_all<Action, 100000>(); }
+int main(int argc, char *argv[]) {
+  run_all<Action, 100000>(argc, argv);
+}

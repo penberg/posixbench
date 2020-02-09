@@ -7,6 +7,8 @@
 #include <array>
 #include <atomic>
 #include <cassert>
+#include <fstream>
+#include <iostream>
 #include <list>
 #include <optional>
 #include <system_error>
@@ -113,7 +115,7 @@ class LatencyBenchmark {
   std::list<std::thread> _threads;
 
  public:
-  void run(const Config &cfg) {
+  void run(const Config &cfg, std::ostream& out) {
 #if 0
     printf("# %s: Measuring thread on CPU %d, intefering thread on CPU %d\n",
            to_string(cfg.scenario), pu->os_index, (*other_pu)->os_index);
@@ -124,13 +126,13 @@ class LatencyBenchmark {
     hwloc_obj_t pu = hwloc_get_obj_by_type(topology, HWLOC_OBJ_PU, 0);
     auto other_pu = find_other_pu(topology, pu, cfg.scenario);
     if (!other_pu) {
-      printf("Unable to find other PU\n");
+      std::cerr << "warning: Unable to find other PU for scenario: " << to_string(cfg.scenario) << std::endl;;
       return;
     }
     Action action; /* FIXME: potentially wrong placement of data */
     action.init();
     std::atomic<bool> stop = false;
-    std::thread t([&cfg, &topology, &pu, &action, &stop]() {
+    std::thread t([&cfg, &topology, &pu, &action, &stop, &out]() {
       hwloc_set_cpubind(topology, pu->cpuset, HWLOC_CPUBIND_THREAD);
       struct hdr_histogram *hist;
       if (hdr_init(1, 1000000, 3, &hist)) {
@@ -142,8 +144,12 @@ class LatencyBenchmark {
       }
       stop.store(true);
       for (size_t percentile = 1; percentile < 100; percentile++) {
-        printf("%s,%f,%ld\n", to_string(cfg.scenario), (double)percentile,
-               hdr_value_at_percentile(hist, percentile));
+        out << to_string(cfg.scenario);
+	out << ",";
+	out << (double)percentile;
+	out << ",";
+	out << hdr_value_at_percentile(hist, percentile);
+	out << std::endl;
       }
       std::array<double, 4> tail_percentiles = {
           99.9,
@@ -152,8 +158,12 @@ class LatencyBenchmark {
           100,
       };
       for (auto percentile : tail_percentiles) {
-        printf("%s,%f,%ld\n", to_string(cfg.scenario), percentile,
-               hdr_value_at_percentile(hist, percentile));
+        out << to_string(cfg.scenario);
+	out << ",";
+	out << (double)percentile;
+	out << ",";
+	out << hdr_value_at_percentile(hist, percentile);
+	out << std::endl;
       }
     });
 
@@ -238,23 +248,44 @@ class LatencyBenchmark {
 };
 
 template <typename T, size_t nr_iter>
-static void run_latency_benchmark(Scenario scenario) {
+static void run_latency_benchmark(Scenario scenario, std::ostream& out) {
   Config cfg;
   cfg.nr_iter = nr_iter;
   cfg.scenario = scenario;
   LatencyBenchmark<T> benchmark;
-  benchmark.run(cfg);
+  benchmark.run(cfg, out);
 }
 
 template <typename T, size_t nr_iter>
-static void run_latency_benchmarks() {
-  printf("scenario,percentile,time\n");
-  run_latency_benchmark<T, nr_iter>(REMOTE_PACKAGE);
-  run_latency_benchmark<T, nr_iter>(REMOTE_CORE);
-  run_latency_benchmark<T, nr_iter>(LOCAL_CORE);
+static void run_latency_benchmarks(std::ostream& out) {
+  out << "scenario,percentile,time" << std::endl;
+  run_latency_benchmark<T, nr_iter>(REMOTE_PACKAGE, out);
+  run_latency_benchmark<T, nr_iter>(REMOTE_CORE, out);
+  run_latency_benchmark<T, nr_iter>(LOCAL_CORE, out);
+}
+
+static void usage(std::string program)
+{
+  std::cout << "usage: " << program << " [-l <path>]" << std::endl;
 }
 
 template <typename T, size_t nr_iter = 1000000>
-static void run_all() {
-  run_latency_benchmarks<T, nr_iter>();
+static void run_all(int argc, char *argv[]) {
+  std::optional<std::string> latency_output;
+  int c;
+  while ((c = getopt (argc, argv, "l:")) != -1) {
+    switch (c) {
+    case 'l':
+      latency_output = optarg;
+      break;
+    default:
+      usage(::basename(argv[0]));
+      exit(1);
+    }
+  }
+  if (latency_output) {
+    std::ofstream output;
+    output.open(*latency_output);
+    run_latency_benchmarks<T, nr_iter>(output);
+  }
 }

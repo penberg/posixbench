@@ -71,4 +71,6 @@ struct Action {
   }
 };
 
-int main() { run_all<Action>(); }
+int main(int argc, char *argv[]) {
+  run_all<Action>(argc, argv);
+}

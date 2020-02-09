@@ -42,7 +42,7 @@ bench: $(BENCHMARKS)
 $(BENCHMARKS):
 	$(E) "  BENCH   " $@
 	$(Q) mkdir -p "$(RESULTS_OUT)"
-	$(Q)./build/$@ > "$(RESULTS_OUT)/$@.csv"
+	$(Q)./build/$@ -l "$(RESULTS_OUT)/$@.csv"
 
 report:
 	$(E) "  GEN     " $(REPORT)
