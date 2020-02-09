@@ -23,7 +23,8 @@ OS=$(shell uname -s)
 CPU=$(shell scripts/cpuinfo.sh)
 
 RESULTS_OUT=results/$(OS)/$(CPU)
-RESULTS_TEMPLATE=results/template
+
+REPORT=posixbench-report.md
 
 TARBALL=posixbench.tar.gz
 
@@ -36,8 +37,8 @@ build:
 .PHONY: build
 
 bench: $(BENCHMARKS)
-	$(Q) cp "$(RESULTS_TEMPLATE)/README.md" "$(RESULTS_OUT)/"
-	$(Q) cp "$(RESULTS_TEMPLATE)/README.html" "$(RESULTS_OUT)/"
+	$(E) "  GEN     " $(REPORT)
+	$(Q) UNAME="$(shell uname -a)" CPUINFO="$(shell ./scripts/cpuinfo.sh)" envsubst < posixbench-report.md.in > "$(RESULTS_OUT)/$(REPORT)"
 .PHONY: bench
 
 $(BENCHMARKS):

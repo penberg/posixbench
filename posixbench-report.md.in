@@ -1,5 +1,21 @@
 ## POSIX Benchmark Results
 
+## Environment
+
+System information:
+
+```
+$UNAME
+```
+
+CPU information:
+
+```
+$CPUINFO
+```
+
+## Benchmark Results
+
 ### Retrieve current time
 
 The time between two consecutive executions of `clock_gettime` without doing anything.
