@@ -246,10 +246,15 @@ static void run_latency_benchmark(Scenario scenario) {
   benchmark.run(cfg);
 }
 
-template <typename T, size_t nr_iter = 1000000>
-static void run_all() {
+template <typename T, size_t nr_iter>
+static void run_latency_benchmarks() {
   printf("scenario,percentile,time\n");
   run_latency_benchmark<T, nr_iter>(REMOTE_PACKAGE);
   run_latency_benchmark<T, nr_iter>(REMOTE_CORE);
   run_latency_benchmark<T, nr_iter>(LOCAL_CORE);
+}
+
+template <typename T, size_t nr_iter = 1000000>
+static void run_all() {
+  run_latency_benchmarks<T, nr_iter>();
 }
