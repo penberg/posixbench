@@ -32,6 +32,18 @@ target_link_libraries(bench-pthread-spinlock ${LIBS})
 add_executable(bench-pagefault bench-pagefault.cpp)
 target_link_libraries(bench-pagefault ${LIBS})
 
+add_executable(bench-pagefault-large bench-pagefault-large.cpp)
+target_link_libraries(bench-pagefault-large ${LIBS})
+
+add_executable(bench-mmap-munmap bench-mmap-munmap.cpp)
+target_link_libraries(bench-mmap-munmap ${LIBS})
+
+add_executable(bench-mmap-populate-munmap bench-mmap-populate-munmap.cpp)
+target_link_libraries(bench-mmap-populate-munmap ${LIBS})
+
+add_executable(bench-mprotect bench-mprotect.cpp)
+target_link_libraries(bench-mprotect ${LIBS})
+
 add_executable(bench-eventfd bench-eventfd.cpp)
 target_link_libraries(bench-eventfd ${LIBS})
 
