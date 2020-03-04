@@ -88,9 +88,41 @@ The time it takes for a thread to acquire and release a spinlock that is under c
 
 The time it takes for a thread to take a page fault.
 
-![pthread-pagefault](bench-pagefault.png)
+![pagefault](bench-pagefault.png)
 
 [[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pagefault.cpp)] [[CSV](bench-pagefault.csv)]
+
+### Page fault (large page)
+
+The time it takes for a thread to take a page fault with large page.
+
+![pagefault-large](bench-pagefault-large.png)
+
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-pagefault-large.cpp)] [[CSV](bench-pagefault-large.csv)]
+
+### Allocate/deallocate virtual memory
+
+The time it takes for a thread to allocate and deallocate virtual memory.
+
+![mmap-munmap](bench-mmap-munmap.png)
+
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-mmap-munmap.cpp)] [[CSV](bench-mmap-munmap.csv)]
+
+### Allocate/deallocate physical memory
+
+The time it takes for a thread to allocate and deallocate physical memory.
+
+![mmap-munmap](bench-mmap-populate-munmap.png)
+
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-mmap-populate-munmap.cpp)] [[CSV](bench-mmap-populate-munmap.csv)]
+
+### Update memory protection
+
+The time it takes for a thread to update memory protection.
+
+![mmap-munmap](bench-mprotect.png)
+
+[[Benchmark](https://github.com/penberg/posixbench/blob/master/bench-mprotect.cpp)] [[CSV](bench-mmap-protect.csv)]
 
 ### Thread notification (eventfd, blocking)
 
