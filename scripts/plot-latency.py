@@ -13,6 +13,8 @@ parser.add_argument("filename", help='The name of a data file to generate a plot
 args = parser.parse_args()
 
 df = pd.read_csv(args.filename, delimiter=',', header=0)
+df = df.loc[df['percentile'] != 'mean']
+df['percentile'] = df['percentile'].astype(float)
 df = df.loc[df['percentile'] <= 99]
 df['time'] = df['time'] / 1000
 

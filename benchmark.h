@@ -143,6 +143,12 @@ class LatencyBenchmark {
         hdr_record_value(hist, diff);
       }
       stop.store(true);
+      out << to_string(cfg.scenario);
+      out << ",";
+      out << "mean";
+      out << ",";
+      out << hdr_mean(hist);
+      out << std::endl;
       for (size_t percentile = 1; percentile < 100; percentile++) {
         out << to_string(cfg.scenario);
 	out << ",";
