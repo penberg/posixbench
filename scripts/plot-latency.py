@@ -29,7 +29,7 @@ L3_access_latency = 0.020 # microseconds
 optane_latency = 0.305 # microseconds
 
 fig, ax = plt.subplots()
-for name, group in df.groupby('scenario'):
+for name, group in df.groupby('scenario', sort=False):
   group.plot(x='time', y='percentile', legend=True, label=name, ax=ax)
 
 plt.axvline(x=L3_access_latency, label="L3 cache", color="black", linestyle="dotted")
