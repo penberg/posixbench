@@ -30,6 +30,8 @@ static uint64_t time_diff(struct timespec *start, struct timespec *end) {
 }
 
 enum Scenario {
+  /// No interfering thread.
+  NO_INTERFERENCE,
   /// Interfering thread is running on a remote package (NUMA).
   REMOTE_PACKAGE,
   /// Interfering thread is running on a remote core (SMP).
@@ -40,12 +42,14 @@ enum Scenario {
 
 static const char *to_string(Scenario scenario) {
   switch (scenario) {
+    case NO_INTERFERENCE:
+      return "No interference";
     case REMOTE_PACKAGE:
-      return "NUMA";
+      return "NUMA interference";
     case REMOTE_CORE:
-      return "Multicore";
+      return "Multicore interference";
     case LOCAL_CORE:
-      return "SMT";
+      return "SMT interference";
   }
   assert(0);
 }
@@ -70,6 +74,8 @@ struct SymmetricAction {
   }
 
   void other_operation(size_t tid) { Operation()(); }
+
+  bool supports_non_interference() { return true; }
 };
 
 template <typename Operation, typename State>
@@ -94,6 +100,8 @@ struct SymmetricActionWithState {
   }
 
   void other_operation(size_t tid) { Operation()(state); }
+
+  bool supports_non_interference() { return true; }
 };
 
 struct Config {
@@ -124,12 +132,18 @@ class LatencyBenchmark {
     hwloc_topology_init(&topology);
     hwloc_topology_load(topology);
     hwloc_obj_t pu = hwloc_get_obj_by_type(topology, HWLOC_OBJ_PU, 0);
-    auto other_pu = find_other_pu(topology, pu, cfg.scenario);
-    if (!other_pu) {
-      std::cerr << "warning: Unable to find other PU for scenario: " << to_string(cfg.scenario) << std::endl;;
-      return;
+    std::optional<hwloc_obj_t> other_pu;
+    if (cfg.scenario != NO_INTERFERENCE) {
+        other_pu = find_other_pu(topology, pu, cfg.scenario);
+        if (!other_pu) {
+          std::cerr << "warning: Unable to find other PU for scenario: " << to_string(cfg.scenario) << std::endl;;
+          return;
+        }
     }
     Action action; /* FIXME: potentially wrong placement of data */
+    if (cfg.scenario == NO_INTERFERENCE && !action.supports_non_interference()) {
+        return;
+    }
     action.init();
     std::atomic<bool> stop = false;
     std::thread t([&cfg, &topology, &pu, &action, &stop, &out]() {
@@ -173,26 +187,28 @@ class LatencyBenchmark {
       }
     });
 
-    for (size_t tid = 0; tid < cfg.nr_threads; tid++) {
-      std::thread interfering_thread([&cfg, &topology, &other_pu, &stop,
-                                      tid]() {
-        /* Set up a signal handler that does not restart system calls. When the
-           benchmark harness is about to stop, it sends a signal to all
-           intefering threads to return from any blocking system calls.  */
-        struct ::sigaction sa;
-        sa.sa_handler = signal_handler;
-        sa.sa_flags = 0;
-        ::sigemptyset(&sa.sa_mask);
-        ::sigaction(SIGINT, &sa, nullptr);
+    if (other_pu) {
+      for (size_t tid = 0; tid < cfg.nr_threads; tid++) {
+        std::thread interfering_thread([&cfg, &topology, &other_pu, &stop,
+                                        tid]() {
+          /* Set up a signal handler that does not restart system calls. When the
+             benchmark harness is about to stop, it sends a signal to all
+             intefering threads to return from any blocking system calls.  */
+          struct ::sigaction sa;
+          sa.sa_handler = signal_handler;
+          sa.sa_flags = 0;
+          ::sigemptyset(&sa.sa_mask);
+          ::sigaction(SIGINT, &sa, nullptr);
 
-        hwloc_set_cpubind(topology, (*other_pu)->cpuset, HWLOC_CPUBIND_THREAD);
+          hwloc_set_cpubind(topology, (*other_pu)->cpuset, HWLOC_CPUBIND_THREAD);
 
-        Action action;
-        while (!stop.load(std::memory_order_relaxed)) {
-          action.other_operation(tid);
-        }
-      });
-      _threads.push_back(std::move(interfering_thread));
+          Action action;
+          while (!stop.load(std::memory_order_relaxed)) {
+            action.other_operation(tid);
+          }
+        });
+        _threads.push_back(std::move(interfering_thread));
+      }
     }
 
     t.join();
@@ -223,6 +239,8 @@ class LatencyBenchmark {
         return std::nullopt;
       }
       switch (scenario) {
+        case NO_INTERFERENCE:
+	  return std::nullopt;
         case REMOTE_PACKAGE:
           if (package != other_package) {
             return pu;
@@ -268,6 +286,7 @@ static void run_latency_benchmarks(std::ostream& out) {
   run_latency_benchmark<T, nr_iter>(REMOTE_PACKAGE, out);
   run_latency_benchmark<T, nr_iter>(REMOTE_CORE, out);
   run_latency_benchmark<T, nr_iter>(LOCAL_CORE, out);
+  run_latency_benchmark<T, nr_iter>(NO_INTERFERENCE, out);
 }
 
 static void usage(std::string program)

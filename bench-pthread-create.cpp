@@ -30,6 +30,8 @@ struct Action {
     });
     t.join();
   }
+
+  bool supports_non_interference() { return true; }
 };
 
 int main(int argc, char *argv[]) {

@@ -35,6 +35,8 @@ struct Action {
     ::mprotect(map, size, PROT_NONE);
     ::mprotect(map, size, PROT_READ | PROT_WRITE);
   }
+
+  bool supports_non_interference() { return true; }
 };
 
 

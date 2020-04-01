@@ -66,6 +66,8 @@ struct Action {
       assert(0);
     }
   }
+
+  bool supports_non_interference() { return false; }
 };
 
 int main(int argc, char *argv[]) {
