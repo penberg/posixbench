@@ -16,6 +16,11 @@ struct Action {
     ::munmap(map, size);
   }
 
+  void operation() {
+    ::mprotect(map, size, PROT_NONE);
+    ::mprotect(map, size, PROT_READ | PROT_WRITE);
+  }
+
   uint64_t measured_operation() {
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
