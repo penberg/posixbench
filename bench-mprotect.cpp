@@ -5,7 +5,7 @@
 static constexpr size_t size = 1024 * 1024; /* 1 MB */
 
 struct Action {
-  void *map;
+  void *map = nullptr;
 
   void init() {
     map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
