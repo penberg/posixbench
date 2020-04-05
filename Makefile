@@ -9,6 +9,7 @@ endif
 export E Q
 
 BENCHMARKS += bench-gettime
+BENCHMARKS += bench-open
 BENCHMARKS += bench-pthread-create
 BENCHMARKS += bench-pthread-yield
 BENCHMARKS += bench-pthread-mutex
