@@ -13,6 +13,7 @@ BENCHMARKS += bench-open
 BENCHMARKS += bench-pthread-create
 BENCHMARKS += bench-pthread-yield
 BENCHMARKS += bench-pthread-mutex
+BENCHMARKS += bench-pthread-mutex-adaptive
 BENCHMARKS += bench-pthread-rwlock-rd
 BENCHMARKS += bench-pthread-rwlock-wr
 BENCHMARKS += bench-pthread-spinlock

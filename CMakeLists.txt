@@ -23,6 +23,9 @@ target_link_libraries(bench-gettime ${LIBS})
 add_executable(bench-pthread-mutex bench-pthread-mutex.cpp)
 target_link_libraries(bench-pthread-mutex ${LIBS})
 
+add_executable(bench-pthread-mutex-adaptive bench-pthread-mutex-adaptive.cpp)
+target_link_libraries(bench-pthread-mutex-adaptive ${LIBS})
+
 add_executable(bench-pthread-rwlock-rd bench-pthread-rwlock-rd.cpp)
 target_link_libraries(bench-pthread-rwlock-rd ${LIBS})
 
