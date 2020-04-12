@@ -37,5 +37,5 @@ struct Op {
 };
 
 int main(int argc, char *argv[]) {
-  run_all<SymmetricActionWithState<Op, State>, nr_pages>(argc, argv);
+  run_all<SymmetricAction<Op, State>, nr_pages>(argc, argv);
 }

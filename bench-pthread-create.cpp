@@ -5,19 +5,15 @@
 #include <pthread.h>
 
 struct Action {
-  void init() {
-  }
+  NoState make_state() { return NoState(); }
 
-  void release() {
-  }
-
-  void raw_operation() {
+  void raw_operation(NoState& state) {
     std::thread t([] {
     });
     t.join();
   }
 
-  uint64_t measured_operation() {
+  uint64_t measured_operation(NoState& state) {
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
@@ -31,8 +27,8 @@ struct Action {
     return timespec_to_ns(&end) - timespec_to_ns(&start);
   }
 
-  void other_operation(size_t tid) {
-    raw_operation();
+  void other_operation(NoState& state, size_t tid) {
+    raw_operation(state);
   }
 
   bool supports_non_interference() { return true; }

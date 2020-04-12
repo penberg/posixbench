@@ -1,7 +1,7 @@
 #include "benchmark.h"
 
 struct Op {
-  void operator()() { pthread_yield(); }
+  void operator()(NoState& state) { pthread_yield(); }
 };
 
 int main(int argc, char *argv[]) {

@@ -72,50 +72,21 @@ static const char *to_string(Scenario scenario) {
   assert(0);
 }
 
-template <typename Operation, bool SupportsEnergyMeasurement = true>
-struct SymmetricAction {
-  void init() {}
-
-  void release() {}
-
-  void raw_operation() { Operation()(); }
-
-  uint64_t measured_operation() {
-    struct timespec start;
-    if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
-      assert(0);
-    }
-    raw_operation();
-    struct timespec end;
-    if (clock_gettime(CLOCK_MONOTONIC, &end) < 0) {
-      assert(0);
-    }
-    return time_diff(&start, &end);
-  }
-
-  void other_operation(size_t tid) { raw_operation(); }
-
-  bool supports_non_interference() { return true; }
-
-  bool supports_energy_measurement() { return SupportsEnergyMeasurement; }
+struct NoState {
 };
 
-template <typename Operation, typename State>
-struct SymmetricActionWithState {
-  State state;
+template <typename Operation, typename State = NoState>
+struct SymmetricAction {
+  State make_state() { return State(); }
 
-  void init() {}
+  void raw_operation(State& state) { Operation()(state); }
 
-  void release() {}
-
-  void raw_operation() { Operation()(state); }
-
-  uint64_t measured_operation() {
+  uint64_t measured_operation(State& state) {
     struct timespec start;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
     }
-    raw_operation();
+    raw_operation(state);
     struct timespec end;
     if (clock_gettime(CLOCK_MONOTONIC, &end) < 0) {
       assert(0);
@@ -123,7 +94,7 @@ struct SymmetricActionWithState {
     return time_diff(&start, &end);
   }
 
-  void other_operation(size_t tid) { raw_operation(); }
+  void other_operation(State& state, size_t tid) { raw_operation(state); }
 
   bool supports_non_interference() { return true; }
 
@@ -212,20 +183,20 @@ class LatencyBenchmark {
           return;
         }
     }
-    Action action; /* FIXME: potentially wrong placement of data */
+    Action action;
     if (cfg.scenario == NO_INTERFERENCE && !action.supports_non_interference()) {
         return;
     }
-    action.init();
     std::atomic<bool> stop = false;
     std::thread t([&cfg, &topology, &pu, &action, &stop, &out]() {
       hwloc_set_cpubind(topology, pu->cpuset, HWLOC_CPUBIND_THREAD);
+      auto state = action.make_state();
       struct hdr_histogram *hist;
       if (hdr_init(1, 1000000, 3, &hist)) {
         assert(0);
       }
       for (size_t i = 0; i < cfg.nr_iter; i++) {
-        auto diff = action.measured_operation();
+        auto diff = action.measured_operation(state);
         hdr_record_value(hist, diff);
       }
       stop.store(true);
@@ -261,8 +232,7 @@ class LatencyBenchmark {
 
     if (other_pu) {
       for (size_t tid = 0; tid < cfg.nr_threads; tid++) {
-        std::thread interfering_thread([&cfg, &topology, &other_pu, &stop,
-                                        tid]() {
+        std::thread interfering_thread([&cfg, &topology, &other_pu, &stop, &action, tid]() {
           /* Set up a signal handler that does not restart system calls. When the
              benchmark harness is about to stop, it sends a signal to all
              intefering threads to return from any blocking system calls.  */
@@ -274,9 +244,10 @@ class LatencyBenchmark {
 
           hwloc_set_cpubind(topology, (*other_pu)->cpuset, HWLOC_CPUBIND_THREAD);
 
-          Action action;
+          auto state = action.make_state();
+
           while (!stop.load(std::memory_order_relaxed)) {
-            action.other_operation(tid);
+            action.other_operation(state, tid);
           }
         });
         _threads.push_back(std::move(interfering_thread));
@@ -291,7 +262,6 @@ class LatencyBenchmark {
     for (std::thread &t : _threads) {
       t.join();
     }
-    action.release();
     fflush(stdout);
     hwloc_topology_destroy(topology);
   }
@@ -365,8 +335,8 @@ inline void wait_for_rapl_sampling_period_begin() {
   }
 }
 
-template<typename Action>
-inline uint64_t measure_energy(Action& action, int msr_offset, uint64_t iterations, double energy_unit)
+template<typename Action, typename State>
+inline uint64_t measure_energy(Action& action, State& state, int msr_offset, uint64_t iterations, double energy_unit)
 {
   struct timespec start;
   if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
@@ -376,7 +346,7 @@ inline uint64_t measure_energy(Action& action, int msr_offset, uint64_t iteratio
 
   uint64_t energy_begin = read_msr(msr_offset);
   for (uint64_t i = 0; i < iterations; i++) {
-    action.raw_operation();
+    action.raw_operation(state);
   }
   uint64_t energy_end = read_msr(msr_offset);
 
@@ -418,14 +388,13 @@ class EnergyBenchmark {
         return;
       }
     }
-    Action action; /* FIXME: potentially wrong placement of data */
+    Action action;
     if (cfg.scenario == NO_INTERFERENCE && !action.supports_non_interference()) {
       return;
     }
     if (!action.supports_energy_measurement()) {
       return;
     }
-    action.init();
     std::atomic<bool> stop = false;
     std::thread t([&cfg, &topology, &pu, &action, &stop, &out]() {
       int cpu = pu->os_index; /* FIXME: is this correct CPU? */
@@ -439,6 +408,8 @@ class EnergyBenchmark {
       double energy_unit = pow(0.5, (double)((power_unit >> 8) & 0x1f));
 
       hwloc_set_cpubind(topology, pu->cpuset, HWLOC_CPUBIND_THREAD);
+
+      auto state = action.make_state();
 
       struct ::sigaction sa;
       sa.sa_handler = alarm_signal_handler;
@@ -456,7 +427,7 @@ class EnergyBenchmark {
 
       uint64_t nr_ops = 0;
       while (!alarm_fired) {
-        action.raw_operation();
+        action.raw_operation(state);
 	nr_ops++;
       }
       struct timespec end_ts;
@@ -474,10 +445,10 @@ class EnergyBenchmark {
       printf("ns/op = %f, iterations = %lu\n", ns_per_op, iterations);
 
       for (size_t j = 0; j < nr_samples; j++) {
-        uint64_t pkg_energy  = measure_energy(action, MSR_PKG_ENERGY_STATUS, iterations, energy_unit);
-        uint64_t p0_energy   = measure_energy(action, MSR_PP0_ENERGY_STATUS, iterations, energy_unit);
-        uint64_t p1_energy   = measure_energy(action, MSR_PP1_ENERGY_STATUS, iterations, energy_unit);
-        uint64_t dram_energy = measure_energy(action, MSR_DRAM_ENERGY_STATUS, iterations, energy_unit);
+        uint64_t pkg_energy  = measure_energy(action, state, MSR_PKG_ENERGY_STATUS, iterations, energy_unit);
+        uint64_t p0_energy   = measure_energy(action, state, MSR_PP0_ENERGY_STATUS, iterations, energy_unit);
+        uint64_t p1_energy   = measure_energy(action, state, MSR_PP1_ENERGY_STATUS, iterations, energy_unit);
+        uint64_t dram_energy = measure_energy(action, state, MSR_DRAM_ENERGY_STATUS, iterations, energy_unit);
 
         out << cfg.benchmark;
         out << ",";
@@ -497,8 +468,7 @@ class EnergyBenchmark {
 
     if (other_pu) {
       for (size_t tid = 0; tid < cfg.nr_threads; tid++) {
-        std::thread interfering_thread([&cfg, &topology, &other_pu, &stop,
-                                        tid]() {
+        std::thread interfering_thread([&cfg, &topology, &other_pu, &stop, &action, tid]() {
           /* Set up a signal handler that does not restart system calls. When the
              benchmark harness is about to stop, it sends a signal to all
              intefering threads to return from any blocking system calls.  */
@@ -509,10 +479,11 @@ class EnergyBenchmark {
           ::sigaction(SIGINT, &sa, nullptr);
      
           hwloc_set_cpubind(topology, (*other_pu)->cpuset, HWLOC_CPUBIND_THREAD);
-     
-          Action action;
+    
+	  auto state = action.make_state();
+
           while (!stop.load(std::memory_order_relaxed)) {
-            action.other_operation(tid);
+            action.other_operation(state, tid);
           }
         });
         _threads.push_back(std::move(interfering_thread));
@@ -527,7 +498,6 @@ class EnergyBenchmark {
     for (std::thread &t : _threads) {
       t.join();
     }
-    action.release();
     fflush(stdout);
     hwloc_topology_destroy(topology);
   }

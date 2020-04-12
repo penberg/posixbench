@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 struct Op {
-  void operator()() {
+  void operator()(NoState& tate) {
     ::getuid();
   }
 };

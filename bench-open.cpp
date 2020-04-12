@@ -8,7 +8,7 @@
 static char filename[PATH_MAX];
 
 struct Action {
-  void init() {
+  Action() {
     ::strncpy(filename, "tmp-bench-openXXXXXX", PATH_MAX);
     int fd = mkostemp(filename, O_CREAT);
     if (fd < 0) {
@@ -19,13 +19,15 @@ struct Action {
     }
   }
 
-  void release() {
+  ~Action() {
     if (::unlink(filename) < 0) {
       assert(0);
     }
   }
 
-  void raw_operation() {
+  NoState make_state() { return NoState(); }
+
+  void raw_operation(NoState& state) {
     int fd = ::open(filename, O_RDWR);
     if (fd < 0) {
       assert(0);
@@ -35,7 +37,7 @@ struct Action {
     }
   }
 
-  uint64_t measured_operation() {
+  uint64_t measured_operation(NoState& state) {
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
@@ -55,8 +57,8 @@ struct Action {
     return end_ns - start_ns;
   }
 
-  void other_operation(size_t tid) {
-    raw_operation();
+  void other_operation(NoState& state, size_t tid) {
+    raw_operation(state);
   }
 
   bool supports_non_interference() { return true; }

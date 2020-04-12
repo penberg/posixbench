@@ -1,7 +1,7 @@
 #include "benchmark.h"
 
 struct Op {
-  void operator()() {}
+  void operator()(NoState& state) {}
 };
 
 int main(int argc, char *argv[]) {

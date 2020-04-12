@@ -16,19 +16,21 @@ struct Action {
   /// The running index of remote thread to wake up.
   size_t remote_idx = 0;
 
-  void init() {
+  Action() {
     local_efd = eventfd(0, 0);
     remote_efds.push_back(eventfd(0, EFD_NONBLOCK));
   }
 
-  void release() {
+  ~Action() {
     for (size_t i = 0; i < remote_efds.size(); i++) {
       ::close(remote_efds[i]);
     }
     remote_efds.clear();
   }
 
-  void raw_operation() {
+  NoState make_state() { return NoState(); }
+
+  void raw_operation(NoState& state) {
     if (eventfd_write(remote_efds[remote_idx], local_efd) < 0) {
       assert(0);
     }
@@ -39,7 +41,7 @@ struct Action {
     remote_idx = (remote_idx + 1) % remote_efds.size();
   }
 
-  uint64_t measured_operation() {
+  uint64_t measured_operation(NoState& state) {
     struct timespec start;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
@@ -56,7 +58,7 @@ struct Action {
     return end_ns - start_ns;
   }
 
-  void other_operation(size_t tid) {
+  void other_operation(NoState& state, size_t tid) {
     eventfd_t fd = 0;
     if (eventfd_read(remote_efds[tid], &fd) < 0) {
       if (errno == EAGAIN) {

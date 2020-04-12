@@ -12,7 +12,7 @@ static void init() {
 }
 
 struct Op {
-  void operator()() {
+  void operator()(NoState& state) {
     pthread_spin_lock(&lock);
     pthread_spin_unlock(&lock);
   }
