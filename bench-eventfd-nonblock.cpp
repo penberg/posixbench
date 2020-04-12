@@ -28,6 +28,17 @@ struct Action {
     remote_efds.clear();
   }
 
+  void raw_operation() {
+    if (eventfd_write(remote_efds[remote_idx], local_efd) < 0) {
+      assert(0);
+    }
+    eventfd_t end_ns = 0;
+    if (eventfd_read(local_efd, &end_ns) < 0) {
+      assert(0);
+    }
+    remote_idx = (remote_idx + 1) % remote_efds.size();
+  }
+
   uint64_t measured_operation() {
     struct timespec start;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
@@ -68,6 +79,8 @@ struct Action {
   }
 
   bool supports_non_interference() { return false; }
+
+  bool supports_energy_measurement() { return true; }
 };
 
 int main(int argc, char *argv[]) {

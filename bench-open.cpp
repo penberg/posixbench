@@ -25,6 +25,16 @@ struct Action {
     }
   }
 
+  void raw_operation() {
+    int fd = ::open(filename, O_RDWR);
+    if (fd < 0) {
+      assert(0);
+    }
+    if (::close(fd) < 0) {
+      assert(0);
+    }
+  }
+
   uint64_t measured_operation() {
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
@@ -46,16 +56,12 @@ struct Action {
   }
 
   void other_operation(size_t tid) {
-    int fd = ::open(filename, O_RDWR);
-    if (fd < 0) {
-      assert(0);
-    }
-    if (::close(fd) < 0) {
-      assert(0);
-    }
+    raw_operation();
   }
 
   bool supports_non_interference() { return true; }
+
+  bool supports_energy_measurement() { return true; }
 };
 
 int main(int argc, char *argv[]) { run_all<Action>(argc, argv); }

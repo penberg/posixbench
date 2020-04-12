@@ -49,11 +49,13 @@ $(BENCHMARKS):
 	$(E) "  BENCH   " $@
 	$(Q) mkdir -p "$(RESULTS_OUT)"
 	$(Q)./build/$@ -l "$(RESULTS_OUT)/$@.csv"
+	$(Q)./build/$@ -e "$(RESULTS_OUT)/$@-energy.csv"
 
 report:
 	$(E) "  GEN     " $(REPORT)
 	$(Q) UNAME="$(shell uname -a)" CPUINFO="$(shell ./scripts/cpuinfo.sh)" envsubst < posixbench-report.md.in > "$(RESULTS_OUT)/$(REPORT)"
 	$(Q) $(foreach benchmark,$(BENCHMARKS),./scripts/plot-latency.py "$(RESULTS_OUT)/$(benchmark).csv";)
+	$(Q) $(foreach benchmark,$(BENCHMARKS),./scripts/plot-energy.py "$(RESULTS_OUT)/$(benchmark)-energy.csv";)
 .PHONY: report
 
 tarball: $(TARBALL)

@@ -16,7 +16,7 @@ struct Action {
     ::munmap(map, size);
   }
 
-  void operation() {
+  void raw_operation() {
     ::mprotect(map, size, PROT_NONE);
     ::mprotect(map, size, PROT_READ | PROT_WRITE);
   }
@@ -37,11 +37,12 @@ struct Action {
   }
 
   void other_operation(size_t tid) {
-    ::mprotect(map, size, PROT_NONE);
-    ::mprotect(map, size, PROT_READ | PROT_WRITE);
+    raw_operation();
   }
 
   bool supports_non_interference() { return true; }
+
+  bool supports_energy_measurement() { return true; }
 };
 
 

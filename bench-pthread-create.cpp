@@ -11,6 +11,12 @@ struct Action {
   void release() {
   }
 
+  void raw_operation() {
+    std::thread t([] {
+    });
+    t.join();
+  }
+
   uint64_t measured_operation() {
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
@@ -26,12 +32,12 @@ struct Action {
   }
 
   void other_operation(size_t tid) {
-    std::thread t([] {
-    });
-    t.join();
+    raw_operation();
   }
 
   bool supports_non_interference() { return true; }
+
+  bool supports_energy_measurement() { return true; }
 };
 
 int main(int argc, char *argv[]) {
