@@ -118,6 +118,50 @@ static void signal_handler(int signum) {
      blocked system calls.  */
 }
 
+inline std::optional<hwloc_obj_t> find_package(hwloc_obj_t obj) {
+  while ((obj = obj->parent)) {
+    if (obj->type == HWLOC_OBJ_PACKAGE) {
+      return obj;
+    }
+  }
+  return std::nullopt;
+}
+
+inline std::optional<hwloc_obj_t> find_other_pu(hwloc_topology_t topology, hwloc_obj_t pu, Scenario scenario) {
+  hwloc_obj_t core = pu->parent;
+  auto package = find_package(core);
+  if (!package) {
+    return std::nullopt;
+  }
+  while ((pu = hwloc_get_next_obj_by_type(topology, HWLOC_OBJ_PU, pu))) {
+    hwloc_obj_t other_core = pu->parent;
+    auto other_package = find_package(other_core);
+    if (!other_package) {
+      return std::nullopt;
+    }
+    switch (scenario) {
+      case NO_INTERFERENCE:
+        return std::nullopt;
+      case REMOTE_PACKAGE:
+        if (package != other_package) {
+          return pu;
+        }
+        break;
+      case REMOTE_CORE:
+        if (package == other_package && core != other_core) {
+          return pu;
+        }
+        break;
+      case LOCAL_CORE:
+        if (core == other_core) {
+          return pu;
+        }
+        break;
+    }
+  }
+  return std::nullopt;
+}
+
 template <class Action>
 class LatencyBenchmark {
   std::list<std::thread> _threads;
@@ -222,52 +266,6 @@ class LatencyBenchmark {
     action.release();
     fflush(stdout);
     hwloc_topology_destroy(topology);
-  }
-
- private:
-  std::optional<hwloc_obj_t> find_other_pu(hwloc_topology_t topology,
-                                           hwloc_obj_t pu, Scenario scenario) {
-    hwloc_obj_t core = pu->parent;
-    auto package = find_package(core);
-    if (!package) {
-      return std::nullopt;
-    }
-    while ((pu = hwloc_get_next_obj_by_type(topology, HWLOC_OBJ_PU, pu))) {
-      hwloc_obj_t other_core = pu->parent;
-      auto other_package = find_package(other_core);
-      if (!other_package) {
-        return std::nullopt;
-      }
-      switch (scenario) {
-        case NO_INTERFERENCE:
-	  return std::nullopt;
-        case REMOTE_PACKAGE:
-          if (package != other_package) {
-            return pu;
-          }
-          break;
-        case REMOTE_CORE:
-          if (package == other_package && core != other_core) {
-            return pu;
-          }
-          break;
-        case LOCAL_CORE:
-          if (core == other_core) {
-            return pu;
-          }
-          break;
-      }
-    }
-    return std::nullopt;
-  }
-
-  std::optional<hwloc_obj_t> find_package(hwloc_obj_t obj) {
-    while ((obj = obj->parent)) {
-      if (obj->type == HWLOC_OBJ_PACKAGE) {
-        return obj;
-      }
-    }
-    return std::nullopt;
   }
 };
 
