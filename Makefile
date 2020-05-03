@@ -30,6 +30,7 @@ OS=$(shell uname -s)
 CPU=$(shell scripts/cpuinfo.sh)
 
 RESULTS_OUT=results/$(OS)/$(CPU)
+RESULTS_PERF=results/$(OS)/$(CPU)/perf
 
 REPORT=posixbench-report.md
 
@@ -51,6 +52,12 @@ $(BENCHMARKS):
 	$(Q) mkdir -p "$(RESULTS_OUT)"
 	$(Q)./build/$@ -l "$(RESULTS_OUT)/$@.csv"
 	$(Q)./build/$@ -e "$(RESULTS_OUT)/$@-energy.csv"
+
+perf:
+	$(E) "  PERF"
+	$(Q) mkdir -p "$(RESULTS_PERF)"
+	$(Q) $(foreach benchmark,$(BENCHMARKS),perf record -g ./build/$(benchmark) -l tmp && perf script > "$(RESULTS_PERF)/$(benchmark).perf";)
+.PHONY: perf
 
 report:
 	$(E) "  GEN     " $(REPORT)
