@@ -20,6 +20,9 @@ target_link_libraries(bench-pthread-create ${LIBS})
 add_executable(bench-pthread-yield bench-pthread-yield.cpp)
 target_link_libraries(bench-pthread-yield ${LIBS})
 
+add_executable(bench-pthread-kill bench-pthread-kill.cpp)
+target_link_libraries(bench-pthread-kill ${LIBS})
+
 add_executable(bench-gettime bench-gettime.cpp)
 target_link_libraries(bench-gettime ${LIBS})
 

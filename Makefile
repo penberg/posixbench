@@ -13,6 +13,7 @@ BENCHMARKS += bench-getuid
 BENCHMARKS += bench-open
 BENCHMARKS += bench-pthread-create
 BENCHMARKS += bench-pthread-yield
+BENCHMARKS += bench-pthread-kill
 BENCHMARKS += bench-pthread-mutex
 BENCHMARKS += bench-pthread-mutex-adaptive
 BENCHMARKS += bench-pthread-rwlock-rd
