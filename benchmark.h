@@ -33,6 +33,20 @@ static uint64_t time_diff(struct timespec *start, struct timespec *end) {
   return end_ns - start_ns;
 }
 
+enum class Interference : uint8_t {
+  NONE = 0x01,
+  LOCAL_CORE = 0x02,
+  REMOTE_CORE = 0x04,
+  REMOTE_PACKAGE = 0x08,
+  ALL = NONE | LOCAL_CORE | REMOTE_CORE | REMOTE_PACKAGE,
+};
+
+inline bool operator&(Interference x, Interference y) {
+  using Ty = std::underlying_type_t<Interference>;
+
+  return static_cast<Interference>(static_cast<Ty>(x) & static_cast<Ty>(y)) == y;
+}
+
 enum Scenario {
   /// No interfering thread.
   NO_INTERFERENCE,
@@ -293,17 +307,25 @@ static void run_latency_benchmark(Scenario scenario, std::ostream& out) {
 }
 
 template <typename T, size_t nr_iter>
-static void run_latency_benchmarks(std::ostream& out) {
+static void run_latency_benchmarks(Interference interference, std::ostream& out) {
   out << "scenario,percentile,time" << std::endl;
-  run_latency_benchmark<T, nr_iter>(REMOTE_PACKAGE, out);
-  run_latency_benchmark<T, nr_iter>(REMOTE_CORE, out);
-  run_latency_benchmark<T, nr_iter>(LOCAL_CORE, out);
-  run_latency_benchmark<T, nr_iter>(NO_INTERFERENCE, out);
+  if (interference & Interference::REMOTE_PACKAGE) {
+    run_latency_benchmark<T, nr_iter>(Scenario::REMOTE_PACKAGE, out);
+  }
+  if (interference & Interference::REMOTE_CORE) {
+    run_latency_benchmark<T, nr_iter>(Scenario::REMOTE_CORE, out);
+  }
+  if (interference & Interference::LOCAL_CORE) {
+    run_latency_benchmark<T, nr_iter>(Scenario::LOCAL_CORE, out);
+  }
+  if (interference & Interference::NONE) {
+    run_latency_benchmark<T, nr_iter>(Scenario::NO_INTERFERENCE, out);
+  }
 }
 
 static void usage(std::string program)
 {
-  std::cout << "usage: " << program << " [-l <path>]" << std::endl;
+  std::cout << "usage: " << program << "[-i <interference>] [-l <path>]" << std::endl;
 }
 
 /* RAPL MSRs  */
@@ -523,22 +545,51 @@ static void run_energy_benchmark(std::string benchmark, Scenario scenario,
 }
 
 template <typename T, size_t nr_iter>
-static void run_energy_benchmarks(std::string benchmark, std::ostream &out) {
+static void run_energy_benchmarks(std::string benchmark, Interference interference, std::ostream &out) {
   out << "Benchmark,Scenario,PackageEnergyPerOperation(nJ),PowerPlane0EnergyPerOperation(nJ),PowerPlane1EnergyPerOperation(nJ),DRAMEnergyPerOperation(nJ)" << std::endl;
-  run_energy_benchmark<T, nr_iter>(benchmark, REMOTE_PACKAGE, out);
-  run_energy_benchmark<T, nr_iter>(benchmark, REMOTE_CORE, out);
-  run_energy_benchmark<T, nr_iter>(benchmark, LOCAL_CORE, out);
-  run_energy_benchmark<T, nr_iter>(benchmark, NO_INTERFERENCE, out);
+  if (interference & Interference::REMOTE_PACKAGE) {
+    run_energy_benchmark<T, nr_iter>(benchmark, Scenario::REMOTE_PACKAGE, out);
+  }
+  if (interference & Interference::REMOTE_CORE) {
+    run_energy_benchmark<T, nr_iter>(benchmark, Scenario::REMOTE_CORE, out);
+  }
+  if (interference & Interference::LOCAL_CORE) {
+    run_energy_benchmark<T, nr_iter>(benchmark, Scenario::LOCAL_CORE, out);
+  }
+  if (interference & Interference::NONE) {
+    run_energy_benchmark<T, nr_iter>(benchmark, Scenario::NO_INTERFERENCE, out);
+  }
+}
+
+static Interference parse_interference(const std::string& raw_interference)
+{
+  if (raw_interference == "all") {
+    return Interference::ALL;
+  } else if (raw_interference == "none") {
+    return Interference::NONE;
+  } else if (raw_interference == "smt") {
+    return Interference::LOCAL_CORE;
+  } else if (raw_interference == "mc") {
+    return Interference::REMOTE_CORE;
+  } else if (raw_interference == "numa") {
+    return Interference::REMOTE_PACKAGE;
+  } else {
+    throw std::invalid_argument("unknown '" + raw_interference + "' interference option");
+  }
 }
 
 template <typename T, size_t nr_iter = 1000000>
 static void run_all(int argc, char *argv[]) {
   std::string program = ::basename(argv[0]);
+	std::string raw_interference = "all";
   std::optional<std::string> latency_output;
   std::optional<std::string> energy_output;
   int c;
-  while ((c = getopt(argc, argv, "l:e:")) != -1) {
+  while ((c = getopt(argc, argv, "i:l:e:")) != -1) {
     switch (c) {
+      case 'i':
+        raw_interference = optarg;
+        break;
       case 'l':
         latency_output = optarg;
         break;
@@ -550,14 +601,19 @@ static void run_all(int argc, char *argv[]) {
         exit(1);
     }
   }
-  if (latency_output) {
-    std::ofstream output;
-    output.open(*latency_output);
-    run_latency_benchmarks<T, nr_iter>(output);
-  }
-  if (energy_output) {
-    std::ofstream output;
-    output.open(*energy_output);
-    run_energy_benchmarks<T, nr_iter>(program, output);
+  try {
+    auto interference = parse_interference(raw_interference); 
+    if (latency_output) {
+      std::ofstream output;
+      output.open(*latency_output);
+      run_latency_benchmarks<T, nr_iter>(interference, output);
+    }
+    if (energy_output) {
+      std::ofstream output;
+      output.open(*energy_output);
+      run_energy_benchmarks<T, nr_iter>(program, interference, output);
+    }
+  } catch (const std::exception& e) {
+    std::cerr << "error: " << e.what() << std::endl;
   }
 }
