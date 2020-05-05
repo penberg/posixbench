@@ -56,7 +56,7 @@ $(BENCHMARKS):
 perf:
 	$(E) "  PERF"
 	$(Q) mkdir -p "$(RESULTS_PERF)"
-	$(Q) $(foreach benchmark,$(BENCHMARKS),perf record -g ./build/$(benchmark) -l tmp && perf script > "$(RESULTS_PERF)/$(benchmark).perf";)
+	$(Q) $(foreach interference,none smt mc numa,$(foreach benchmark,$(BENCHMARKS),perf record -g ./build/$(benchmark) -i $(interference) -l tmp && perf script > "$(RESULTS_PERF)/$(benchmark)-$(interference).out";))
 .PHONY: perf
 
 report:
