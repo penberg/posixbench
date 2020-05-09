@@ -5,7 +5,7 @@
 #include <pthread.h>
 
 struct Action {
-  benchmark::NoState make_state() { return benchmark::NoState(); }
+  benchmark::NoState make_state(const benchmark::ThreadList& ts) { return benchmark::NoState(ts); }
 
   void raw_operation(benchmark::NoState& state) {
     std::thread t([] {

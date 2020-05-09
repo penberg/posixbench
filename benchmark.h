@@ -74,12 +74,19 @@ static const char *to_string(Scenario scenario) {
   assert(0);
 }
 
+using ThreadList = std::list<std::thread>;
+
 struct NoState {
+  const ThreadList& interfering_threads;
+
+  NoState(const ThreadList& interfering_threads)
+	 : interfering_threads{interfering_threads}
+  {}
 };
 
 template <typename Operation, typename State = NoState>
 struct SymmetricAction {
-  State make_state() { return State(); }
+  State make_state(const ThreadList& interfering_threads) { return State(interfering_threads); }
 
   void raw_operation(State& state) { Operation()(state); }
 
@@ -165,7 +172,7 @@ inline std::optional<hwloc_obj_t> find_other_pu(hwloc_topology_t topology, hwloc
 
 template <class Action>
 class LatencyBenchmark {
-  std::list<std::thread> _interfering_threads;
+  ThreadList _interfering_threads;
 
  public:
   void run(const Config &cfg, std::ostream& out) {
@@ -192,7 +199,7 @@ class LatencyBenchmark {
     std::atomic<bool> stop = false;
     if (other_pu) {
       for (size_t tid = 0; tid < cfg.nr_interfering_threads; tid++) {
-        std::thread interfering_thread([&cfg, &topology, &other_pu, &stop, &action, tid]() {
+        std::thread interfering_thread([this, &cfg, &topology, &other_pu, &stop, &action, tid]() {
           /* Set up a signal handler that does not restart system calls. When the
              benchmark harness is about to stop, it sends a signal to all
              intefering threads to return from any blocking system calls.  */
@@ -204,7 +211,7 @@ class LatencyBenchmark {
 
           hwloc_set_cpubind(topology, (*other_pu)->cpuset, HWLOC_CPUBIND_THREAD);
 
-          auto state = action.make_state();
+          auto state = action.make_state(_interfering_threads);
 
           while (!stop.load(std::memory_order_relaxed)) {
             action.other_operation(state, tid);
@@ -213,9 +220,9 @@ class LatencyBenchmark {
         _interfering_threads.push_back(std::move(interfering_thread));
       }
     }
-    std::thread t([&cfg, &topology, &pu, &action, &stop, &out]() {
+    std::thread t([this, &cfg, &topology, &pu, &action, &stop, &out]() {
       hwloc_set_cpubind(topology, pu->cpuset, HWLOC_CPUBIND_THREAD);
-      auto state = action.make_state();
+      auto state = action.make_state(_interfering_threads);
       struct hdr_histogram *hist;
       if (hdr_init(1, 1000000, 3, &hist)) {
         assert(0);
@@ -369,7 +376,7 @@ inline void alarm_signal_handler(int signum) {
 
 template <class Action>
 class EnergyBenchmark {
-  std::list<std::thread> _interfering_threads;
+  ThreadList _interfering_threads;
 
  public:
   void run(const Config &cfg, std::ostream &out) {
@@ -399,7 +406,7 @@ class EnergyBenchmark {
     std::atomic<bool> stop = false;
     if (other_pu) {
       for (size_t tid = 0; tid < cfg.nr_interfering_threads; tid++) {
-        std::thread interfering_thread([&cfg, &topology, &other_pu, &stop, &action, tid]() {
+        std::thread interfering_thread([this, &cfg, &topology, &other_pu, &stop, &action, tid]() {
           /* Set up a signal handler that does not restart system calls. When the
              benchmark harness is about to stop, it sends a signal to all
              intefering threads to return from any blocking system calls.  */
@@ -411,7 +418,7 @@ class EnergyBenchmark {
      
           hwloc_set_cpubind(topology, (*other_pu)->cpuset, HWLOC_CPUBIND_THREAD);
     
-	  auto state = action.make_state();
+	  auto state = action.make_state(_interfering_threads);
 
           while (!stop.load(std::memory_order_relaxed)) {
             action.other_operation(state, tid);
@@ -420,7 +427,7 @@ class EnergyBenchmark {
         _interfering_threads.push_back(std::move(interfering_thread));
       }
     }
-    std::thread t([&cfg, &topology, &pu, &action, &stop, &out]() {
+    std::thread t([this, &cfg, &topology, &pu, &action, &stop, &out]() {
       int cpu = pu->os_index; /* FIXME: is this correct CPU? */
       char msr_path[PATH_MAX];
       snprintf(msr_path, PATH_MAX, "/dev/cpu/%d/msr", cpu);
@@ -433,7 +440,7 @@ class EnergyBenchmark {
 
       hwloc_set_cpubind(topology, pu->cpuset, HWLOC_CPUBIND_THREAD);
 
-      auto state = action.make_state();
+      auto state = action.make_state(_interfering_threads);
 
       struct ::sigaction sa;
       sa.sa_handler = alarm_signal_handler;

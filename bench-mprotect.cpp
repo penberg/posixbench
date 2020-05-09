@@ -16,7 +16,7 @@ struct Action {
     ::munmap(map, size);
   }
 
-  benchmark::NoState make_state() { return benchmark::NoState(); }
+  benchmark::NoState make_state(const benchmark::ThreadList& ts) { return benchmark::NoState(ts); }
 
   void raw_operation(benchmark::NoState& state) {
     ::mprotect(map, size, PROT_NONE);
