@@ -482,8 +482,12 @@ class EnergyBenchmark {
 
       for (size_t j = 0; j < nr_samples; j++) {
         uint64_t pkg_energy  = measure_energy(action, state, MSR_PKG_ENERGY_STATUS, iterations, energy_unit);
+#if 0
         uint64_t p0_energy   = measure_energy(action, state, MSR_PP0_ENERGY_STATUS, iterations, energy_unit);
         uint64_t p1_energy   = measure_energy(action, state, MSR_PP1_ENERGY_STATUS, iterations, energy_unit);
+#endif
+        uint64_t p0_energy   = 0;
+        uint64_t p1_energy   = 0;
         uint64_t dram_energy = measure_energy(action, state, MSR_DRAM_ENERGY_STATUS, iterations, energy_unit);
 
         out << cfg.benchmark;
