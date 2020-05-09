@@ -25,7 +25,7 @@ struct Action {
     }
   }
 
-  benchmark::NoState make_state(const benchmark::ThreadList& ts) { return benchmark::NoState(ts); }
+  benchmark::NoState make_state(const benchmark::ThreadVector& ts) { return benchmark::NoState(ts); }
 
   void raw_operation(benchmark::NoState& state) {
     int fd = ::open(filename, O_RDWR);

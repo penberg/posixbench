@@ -34,7 +34,7 @@ struct Action {
     remote_efds.clear();
   }
 
-  benchmark::NoState make_state(const benchmark::ThreadList& ts) { return benchmark::NoState(ts); }
+  benchmark::NoState make_state(const benchmark::ThreadVector& ts) { return benchmark::NoState(ts); }
 
   void raw_operation(benchmark::NoState& state) {
     if (eventfd_write(remote_efds[remote_idx], local_efd) < 0) {

@@ -13,10 +13,10 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
-#include <list>
 #include <optional>
 #include <system_error>
 #include <thread>
+#include <vector>
 
 #include <hdr_histogram.h>
 #include <hdr_interval_recorder.h>
@@ -74,19 +74,19 @@ static const char *to_string(Scenario scenario) {
   assert(0);
 }
 
-using ThreadList = std::list<std::thread>;
+using ThreadVector = std::vector<std::thread>;
 
 struct NoState {
-  const ThreadList& interfering_threads;
+  const ThreadVector& interfering_threads;
 
-  NoState(const ThreadList& interfering_threads)
+  NoState(const ThreadVector& interfering_threads)
 	 : interfering_threads{interfering_threads}
   {}
 };
 
 template <typename Operation, typename State = NoState>
 struct SymmetricAction {
-  State make_state(const ThreadList& interfering_threads) { return State(interfering_threads); }
+  State make_state(const ThreadVector& interfering_threads) { return State(interfering_threads); }
 
   void raw_operation(State& state) { Operation()(state); }
 
@@ -172,7 +172,7 @@ inline std::optional<hwloc_obj_t> find_other_pu(hwloc_topology_t topology, hwloc
 
 template <class Action>
 class LatencyBenchmark {
-  ThreadList _interfering_threads;
+  ThreadVector _interfering_threads;
 
  public:
   void run(const Config &cfg, std::ostream& out) {
@@ -198,6 +198,7 @@ class LatencyBenchmark {
     }
     std::atomic<bool> stop = false;
     if (other_pu) {
+      _interfering_threads.resize(cfg.nr_interfering_threads);
       for (size_t tid = 0; tid < cfg.nr_interfering_threads; tid++) {
         std::thread interfering_thread([this, &cfg, &topology, &other_pu, &stop, &action, tid]() {
           /* Set up a signal handler that does not restart system calls. When the
@@ -217,7 +218,7 @@ class LatencyBenchmark {
             action.other_operation(state, tid);
           }
         });
-        _interfering_threads.push_back(std::move(interfering_thread));
+        _interfering_threads[tid] = std::move(interfering_thread);
       }
     }
     std::thread t([this, &cfg, &topology, &pu, &action, &stop, &out]() {
@@ -376,7 +377,7 @@ inline void alarm_signal_handler(int signum) {
 
 template <class Action>
 class EnergyBenchmark {
-  ThreadList _interfering_threads;
+  ThreadVector _interfering_threads;
 
  public:
   void run(const Config &cfg, std::ostream &out) {
@@ -405,6 +406,7 @@ class EnergyBenchmark {
     }
     std::atomic<bool> stop = false;
     if (other_pu) {
+      _interfering_threads.resize(cfg.nr_interfering_threads);
       for (size_t tid = 0; tid < cfg.nr_interfering_threads; tid++) {
         std::thread interfering_thread([this, &cfg, &topology, &other_pu, &stop, &action, tid]() {
           /* Set up a signal handler that does not restart system calls. When the
@@ -424,7 +426,7 @@ class EnergyBenchmark {
             action.other_operation(state, tid);
           }
         });
-        _interfering_threads.push_back(std::move(interfering_thread));
+        _interfering_threads[tid] = std::move(interfering_thread);
       }
     }
     std::thread t([this, &cfg, &topology, &pu, &action, &stop, &out]() {
