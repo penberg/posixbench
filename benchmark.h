@@ -22,6 +22,8 @@
 #include <hdr_interval_recorder.h>
 #include <hwloc.h>
 
+namespace benchmark {
+
 static uint64_t timespec_to_ns(struct timespec *ts) {
   return ts->tv_sec * 1e9 + ts->tv_nsec;
 }
@@ -586,4 +588,6 @@ static void run_all(int argc, char *argv[]) {
   } catch (const std::exception& e) {
     std::cerr << "error: " << e.what() << std::endl;
   }
+}
+
 }

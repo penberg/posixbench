@@ -1,7 +1,7 @@
 #include "benchmark.h"
 
 struct Op {
-  void operator()(NoState& state) {
+  void operator()(benchmark::NoState& state) {
     static pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
     pthread_rwlock_rdlock(&lock);
     pthread_rwlock_unlock(&lock);
@@ -9,5 +9,5 @@ struct Op {
 };
 
 int main(int argc, char *argv[]) {
-  run_all<SymmetricAction<Op>>(argc, argv);
+  benchmark::run_all<benchmark::SymmetricAction<Op>>(argc, argv);
 }

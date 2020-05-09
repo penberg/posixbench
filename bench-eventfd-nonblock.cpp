@@ -28,9 +28,9 @@ struct Action {
     remote_efds.clear();
   }
 
-  NoState make_state() { return NoState(); }
+  benchmark::NoState make_state() { return benchmark::NoState(); }
 
-  void raw_operation(NoState& state) {
+  void raw_operation(benchmark::NoState& state) {
     if (eventfd_write(remote_efds[remote_idx], local_efd) < 0) {
       assert(0);
     }
@@ -41,7 +41,7 @@ struct Action {
     remote_idx = (remote_idx + 1) % remote_efds.size();
   }
 
-  uint64_t measured_operation(NoState& state) {
+  uint64_t measured_operation(benchmark::NoState& state) {
     struct timespec start;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
@@ -54,11 +54,11 @@ struct Action {
       assert(0);
     }
     remote_idx = (remote_idx + 1) % remote_efds.size();
-    uint64_t start_ns = timespec_to_ns(&start);
+    uint64_t start_ns = benchmark::timespec_to_ns(&start);
     return end_ns - start_ns;
   }
 
-  void other_operation(NoState& state, size_t tid) {
+  void other_operation(benchmark::NoState& state, size_t tid) {
     eventfd_t fd = 0;
     if (eventfd_read(remote_efds[tid], &fd) < 0) {
       if (errno == EAGAIN) {
@@ -75,7 +75,7 @@ struct Action {
     if (clock_gettime(CLOCK_MONOTONIC, &now) < 0) {
       assert(0);
     }
-    if (eventfd_write(fd, timespec_to_ns(&now)) < 0) {
+    if (eventfd_write(fd, benchmark::timespec_to_ns(&now)) < 0) {
       assert(0);
     }
   }
@@ -86,5 +86,5 @@ struct Action {
 };
 
 int main(int argc, char *argv[]) {
-  run_all<Action>(argc, argv);
+  benchmark::run_all<Action>(argc, argv);
 }

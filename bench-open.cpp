@@ -25,9 +25,9 @@ struct Action {
     }
   }
 
-  NoState make_state() { return NoState(); }
+  benchmark::NoState make_state() { return benchmark::NoState(); }
 
-  void raw_operation(NoState& state) {
+  void raw_operation(benchmark::NoState& state) {
     int fd = ::open(filename, O_RDWR);
     if (fd < 0) {
       assert(0);
@@ -37,7 +37,7 @@ struct Action {
     }
   }
 
-  uint64_t measured_operation(NoState& state) {
+  uint64_t measured_operation(benchmark::NoState& state) {
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
@@ -52,12 +52,12 @@ struct Action {
     if (::close(fd) < 0) {
       assert(0);
     }
-    uint64_t start_ns = timespec_to_ns(&start);
-    uint64_t end_ns = timespec_to_ns(&end);
+    uint64_t start_ns = benchmark::timespec_to_ns(&start);
+    uint64_t end_ns = benchmark::timespec_to_ns(&end);
     return end_ns - start_ns;
   }
 
-  void other_operation(NoState& state, size_t tid) {
+  void other_operation(benchmark::NoState& state, size_t tid) {
     raw_operation(state);
   }
 
@@ -66,4 +66,4 @@ struct Action {
   bool supports_energy_measurement() { return true; }
 };
 
-int main(int argc, char *argv[]) { run_all<Action>(argc, argv); }
+int main(int argc, char *argv[]) { benchmark::run_all<Action>(argc, argv); }

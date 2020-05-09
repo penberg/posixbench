@@ -31,5 +31,5 @@ struct Op {
 };
 
 int main(int argc, char *argv[]) {
-  run_all<SymmetricAction<Op, State>, nr_pages>(argc, argv);
+  benchmark::run_all<benchmark::SymmetricAction<Op, State>, nr_pages>(argc, argv);
 }

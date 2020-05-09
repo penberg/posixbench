@@ -3,11 +3,11 @@
 #include <unistd.h>
 
 struct Op {
-  void operator()(NoState& tate) {
+  void operator()(benchmark::NoState& tate) {
     ::getuid();
   }
 };
 
 int main(int argc, char *argv[]) {
-  run_all<SymmetricAction<Op>>(argc, argv);
+  benchmark::run_all<benchmark::SymmetricAction<Op>>(argc, argv);
 }

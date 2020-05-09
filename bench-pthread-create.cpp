@@ -5,15 +5,15 @@
 #include <pthread.h>
 
 struct Action {
-  NoState make_state() { return NoState(); }
+  benchmark::NoState make_state() { return benchmark::NoState(); }
 
-  void raw_operation(NoState& state) {
+  void raw_operation(benchmark::NoState& state) {
     std::thread t([] {
     });
     t.join();
   }
 
-  uint64_t measured_operation(NoState& state) {
+  uint64_t measured_operation(benchmark::NoState& state) {
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
@@ -24,10 +24,10 @@ struct Action {
       }
     });
     t.join();
-    return timespec_to_ns(&end) - timespec_to_ns(&start);
+    return benchmark::timespec_to_ns(&end) - benchmark::timespec_to_ns(&start);
   }
 
-  void other_operation(NoState& state, size_t tid) {
+  void other_operation(benchmark::NoState& state, size_t tid) {
     raw_operation(state);
   }
 
@@ -37,5 +37,5 @@ struct Action {
 };
 
 int main(int argc, char *argv[]) {
-  run_all<Action, 100000>(argc, argv);
+  benchmark::run_all<Action, 100000>(argc, argv);
 }

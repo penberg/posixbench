@@ -12,7 +12,7 @@ static void init() {
 }
 
 struct Op {
-  void operator()(NoState& state) {
+  void operator()(benchmark::NoState& state) {
     pthread_spin_lock(&lock);
     pthread_spin_unlock(&lock);
   }
@@ -20,5 +20,5 @@ struct Op {
 
 int main(int argc, char *argv[]) {
   init();
-  run_all<SymmetricAction<Op>>(argc, argv);
+  benchmark::run_all<benchmark::SymmetricAction<Op>>(argc, argv);
 }
