@@ -107,7 +107,7 @@ struct Config {
   /// Test scenario.
   Scenario scenario;
   /// Number of interfering threads.
-  size_t nr_threads = 1;
+  size_t nr_interfering_threads = 1;
   /// Number of iterations.
   size_t nr_iter;
   /// Name of the benchmark.
@@ -165,7 +165,7 @@ inline std::optional<hwloc_obj_t> find_other_pu(hwloc_topology_t topology, hwloc
 
 template <class Action>
 class LatencyBenchmark {
-  std::list<std::thread> _threads;
+  std::list<std::thread> _interfering_threads;
 
  public:
   void run(const Config &cfg, std::ostream& out) {
@@ -233,7 +233,7 @@ class LatencyBenchmark {
     });
 
     if (other_pu) {
-      for (size_t tid = 0; tid < cfg.nr_threads; tid++) {
+      for (size_t tid = 0; tid < cfg.nr_interfering_threads; tid++) {
         std::thread interfering_thread([&cfg, &topology, &other_pu, &stop, &action, tid]() {
           /* Set up a signal handler that does not restart system calls. When the
              benchmark harness is about to stop, it sends a signal to all
@@ -252,16 +252,16 @@ class LatencyBenchmark {
             action.other_operation(state, tid);
           }
         });
-        _threads.push_back(std::move(interfering_thread));
+        _interfering_threads.push_back(std::move(interfering_thread));
       }
     }
 
     t.join();
 
-    for (std::thread &t : _threads) {
+    for (std::thread &t : _interfering_threads) {
       ::pthread_kill(t.native_handle(), SIGINT);
     }
-    for (std::thread &t : _threads) {
+    for (std::thread &t : _interfering_threads) {
       t.join();
     }
     fflush(stdout);
@@ -370,7 +370,7 @@ inline void alarm_signal_handler(int signum) {
 
 template <class Action>
 class EnergyBenchmark {
-  std::list<std::thread> _threads;
+  std::list<std::thread> _interfering_threads;
 
  public:
   void run(const Config &cfg, std::ostream &out) {
@@ -469,7 +469,7 @@ class EnergyBenchmark {
     });
 
     if (other_pu) {
-      for (size_t tid = 0; tid < cfg.nr_threads; tid++) {
+      for (size_t tid = 0; tid < cfg.nr_interfering_threads; tid++) {
         std::thread interfering_thread([&cfg, &topology, &other_pu, &stop, &action, tid]() {
           /* Set up a signal handler that does not restart system calls. When the
              benchmark harness is about to stop, it sends a signal to all
@@ -488,16 +488,16 @@ class EnergyBenchmark {
             action.other_operation(state, tid);
           }
         });
-        _threads.push_back(std::move(interfering_thread));
+        _interfering_threads.push_back(std::move(interfering_thread));
       }
     }
 
     t.join();
 
-    for (std::thread &t : _threads) {
+    for (std::thread &t : _interfering_threads) {
       ::pthread_kill(t.native_handle(), SIGINT);
     }
-    for (std::thread &t : _threads) {
+    for (std::thread &t : _interfering_threads) {
       t.join();
     }
     fflush(stdout);
