@@ -12,6 +12,7 @@
 #include <atomic>
 #include <cassert>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <optional>
 #include <system_error>
@@ -110,11 +111,13 @@ struct SymmetricAction {
   bool supports_energy_measurement() { return true; }
 };
 
+static constexpr int DEFAULT_NR_INTERFERING_THREADS = 1;
+
 struct Config {
   /// Test scenario.
   Scenario scenario;
   /// Number of interfering threads.
-  size_t nr_interfering_threads = 1;
+  size_t nr_interfering_threads = DEFAULT_NR_INTERFERING_THREADS;
   /// Number of iterations.
   size_t nr_iter;
   /// Name of the benchmark.
@@ -558,7 +561,7 @@ static Interference parse_interference(const std::string& raw_interference)
 }
 
 template <typename T, size_t nr_iter = 1000000>
-static void run_all(int argc, char *argv[]) {
+static void run_all(int argc, char *argv[], std::optional<std::function<void(size_t)>> init = std::nullopt) {
   std::string program = ::basename(argv[0]);
 	std::string raw_interference = "all";
   std::optional<std::string> latency_output;
@@ -579,6 +582,9 @@ static void run_all(int argc, char *argv[]) {
         usage(program);
         exit(1);
     }
+  }
+  if (init) {
+    (*init)(DEFAULT_NR_INTERFERING_THREADS);
   }
   try {
     auto interference = parse_interference(raw_interference); 
