@@ -433,7 +433,7 @@ class EnergyBenchmark {
       }
     }
     std::thread t([this, &cfg, &topology, &pu, &action, &stop, &out]() {
-      int cpu = pu->os_index; /* FIXME: is this correct CPU? */
+      int cpu = pu->os_index;
       char msr_path[PATH_MAX];
       snprintf(msr_path, PATH_MAX, "/dev/cpu/%d/msr", cpu);
       msr_fd = open(msr_path, O_RDONLY);
