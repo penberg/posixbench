@@ -445,8 +445,6 @@ class EnergyBenchmark {
 
       hwloc_set_cpubind(topology, pu->cpuset, HWLOC_CPUBIND_THREAD);
 
-      auto state = action.make_state(_interfering_threads);
-
       struct ::sigaction sa;
       sa.sa_handler = alarm_signal_handler;
       sa.sa_flags = 0;
@@ -461,8 +459,10 @@ class EnergyBenchmark {
         assert(0);
       }
 
+      auto state = action.make_state(_interfering_threads);
+
       uint64_t nr_ops = 0;
-      while (!alarm_fired) {
+      while (!alarm_fired && nr_ops < cfg.nr_iter) {
         action.raw_operation(state);
 	nr_ops++;
       }
@@ -476,19 +476,21 @@ class EnergyBenchmark {
       size_t nr_samples = 10;
 
       /* Aim for 100 ms for the energy measurement period.  */
-      uint64_t iterations = uint64_t(1e8 / ns_per_op);
+      uint64_t iterations = std::min(uint64_t(1e8 / ns_per_op), cfg.nr_iter);
 
       printf("ns/op = %f, iterations = %lu\n", ns_per_op, iterations);
 
       for (size_t j = 0; j < nr_samples; j++) {
-        uint64_t pkg_energy  = measure_energy(action, state, MSR_PKG_ENERGY_STATUS, iterations, energy_unit);
+        auto state_pkg = action.make_state(_interfering_threads);
+        uint64_t pkg_energy  = measure_energy(action, state_pkg, MSR_PKG_ENERGY_STATUS, iterations, energy_unit);
 #if 0
         uint64_t p0_energy   = measure_energy(action, state, MSR_PP0_ENERGY_STATUS, iterations, energy_unit);
         uint64_t p1_energy   = measure_energy(action, state, MSR_PP1_ENERGY_STATUS, iterations, energy_unit);
 #endif
         uint64_t p0_energy   = 0;
         uint64_t p1_energy   = 0;
-        uint64_t dram_energy = measure_energy(action, state, MSR_DRAM_ENERGY_STATUS, iterations, energy_unit);
+        auto state_dram = action.make_state(_interfering_threads);
+        uint64_t dram_energy = measure_energy(action, state_dram, MSR_DRAM_ENERGY_STATUS, iterations, energy_unit);
 
         out << cfg.benchmark;
         out << ",";
