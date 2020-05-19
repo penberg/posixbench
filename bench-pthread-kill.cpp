@@ -29,7 +29,12 @@ struct Action {
   void raw_operation(benchmark::NoState& state) {
     auto other_thread = const_cast<std::thread&>(state.interfering_threads[remote_tid]).native_handle();
     ::pthread_kill(other_thread, SIGUSR1);
-    ::pthread_cond_wait(&cond_vars[remote_tid], &mutexes[remote_tid]);
+    ::pthread_mutex_lock(&mutexes[remote_tid]);
+    while (!signaled[remote_tid]) {
+      ::pthread_cond_wait(&cond_vars[remote_tid], &mutexes[remote_tid]);
+    }
+    signaled[remote_tid] = false;
+    ::pthread_mutex_unlock(&mutexes[remote_tid]);
     remote_tid = (remote_tid + 1) % remote_timestamps.size();
   }
 
