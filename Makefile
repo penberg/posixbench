@@ -21,6 +21,7 @@ BENCHMARKS += bench-pthread-rwlock-wr
 BENCHMARKS += bench-pthread-spinlock
 BENCHMARKS += bench-pagefault
 BENCHMARKS += bench-pagefault-large
+BENCHMARKS += bench-pagefault-overhead
 BENCHMARKS += bench-mmap-munmap
 BENCHMARKS += bench-mmap-populate-munmap
 BENCHMARKS += bench-mprotect
