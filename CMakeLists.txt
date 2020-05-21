@@ -59,6 +59,24 @@ target_link_libraries(bench-mmap-populate-munmap ${LIBS})
 add_executable(bench-mprotect bench-mprotect.cpp)
 target_link_libraries(bench-mprotect ${LIBS})
 
+add_executable(bench-mmap bench-mmap.cpp)
+target_link_libraries(bench-mmap ${LIBS})
+
+add_executable(bench-mmap-populate-small bench-mmap-populate-small.cpp)
+target_link_libraries(bench-mmap-populate-small ${LIBS})
+
+add_executable(bench-mmap-populate-large bench-mmap-populate-large.cpp)
+target_link_libraries(bench-mmap-populate-large ${LIBS})
+
+add_executable(bench-munmap bench-munmap.cpp)
+target_link_libraries(bench-munmap ${LIBS})
+
+add_executable(bench-munmap-populated-small bench-munmap-populated-small.cpp)
+target_link_libraries(bench-munmap-populated-small ${LIBS})
+
+add_executable(bench-munmap-populated-large bench-munmap-populated-large.cpp)
+target_link_libraries(bench-munmap-populated-large ${LIBS})
+
 add_executable(bench-eventfd bench-eventfd.cpp)
 target_link_libraries(bench-eventfd ${LIBS})
 

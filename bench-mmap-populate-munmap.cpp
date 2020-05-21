@@ -2,7 +2,7 @@
 
 #include <sys/mman.h>
 
-static constexpr size_t size = 1024 * 1024; /* 1 MB */
+static constexpr size_t size = 2 * 1024 * 1024; /* 2 MB */
 
 struct Op {
   void operator()(benchmark::NoState& state) {
@@ -13,5 +13,5 @@ struct Op {
 };
 
 int main(int argc, char *argv[]) {
-  benchmark::run_all<benchmark::SymmetricAction<Op>, 100000>(argc, argv);
+  benchmark::run_all<benchmark::SymmetricAction<Op>, 10000>(argc, argv);
 }
