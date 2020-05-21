@@ -44,8 +44,8 @@ target_link_libraries(bench-pthread-spinlock ${LIBS})
 add_executable(bench-pagefault-overhead bench-pagefault-overhead.cpp)
 target_link_libraries(bench-pagefault-overhead ${LIBS})
 
-add_executable(bench-pagefault bench-pagefault.cpp)
-target_link_libraries(bench-pagefault ${LIBS})
+add_executable(bench-pagefault-small bench-pagefault-small.cpp)
+target_link_libraries(bench-pagefault-small ${LIBS})
 
 add_executable(bench-pagefault-large bench-pagefault-large.cpp)
 target_link_libraries(bench-pagefault-large ${LIBS})

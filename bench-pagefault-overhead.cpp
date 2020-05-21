@@ -44,7 +44,6 @@ struct Action {
   void raw_operation(benchmark::NoState& state) {
     volatile char *p = reinterpret_cast<char*>(map);
     asm volatile("movq (%0), %0\n\t" : : "a"(p) : "memory");
-
   }
 
   uint64_t measured_operation(benchmark::NoState& state) {
