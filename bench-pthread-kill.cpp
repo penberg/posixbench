@@ -61,8 +61,8 @@ struct Action {
     ::sigset_t set;
     ::sigemptyset(&set);
     ::sigaddset(&set, SIGALRM);
-    ::sigaddset(&set, SIGINT);
     ::sigaddset(&set, SIGUSR1);
+    ::sigaddset(&set, SIGINT);
     int sig;
     ::sigwait(&set, &sig);
     struct timespec now;
@@ -93,12 +93,9 @@ static void init(size_t nr_threads) {
 
 int main(int argc, char *argv[]) {
   ::sigset_t blocked_sigs;
-#if 0
   ::sigfillset(&blocked_sigs);
   ::sigdelset(&blocked_sigs, SIGALRM);
   ::sigdelset(&blocked_sigs, SIGINT);
-#endif
-  ::sigaddset(&blocked_sigs, SIGUSR1);
   assert(::sigprocmask(SIG_SETMASK, &blocked_sigs, nullptr) == 0);
   benchmark::run_all<Action>(argc, argv, init);
 }
