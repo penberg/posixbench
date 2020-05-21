@@ -60,16 +60,17 @@ struct Action {
   void other_operation(benchmark::NoState& state, size_t tid) {
     ::sigset_t set;
     ::sigemptyset(&set);
-    ::sigaddset(&set, SIGALRM);
     ::sigaddset(&set, SIGUSR1);
-    ::sigaddset(&set, SIGINT);
-    int sig;
-    ::sigwait(&set, &sig);
+    ::siginfo_t info;
+    ::timespec timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_nsec = 0;
+    int sig = ::sigtimedwait(&set, &info, &timeout);
     struct timespec now;
     if (clock_gettime(CLOCK_MONOTONIC, &now) < 0) {
       assert(0);
     }
-    assert(sig == SIGALRM || sig == SIGUSR1 || sig == SIGINT);
+    assert(sig == -1 || sig == SIGUSR1);
     remote_timestamps[tid] = benchmark::timespec_to_ns(&now);
     ::pthread_mutex_lock(&mutexes[tid]);
     signaled[tid] = true;
