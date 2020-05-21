@@ -94,9 +94,8 @@ static void init(size_t nr_threads) {
 
 int main(int argc, char *argv[]) {
   ::sigset_t blocked_sigs;
-  ::sigfillset(&blocked_sigs);
-  ::sigdelset(&blocked_sigs, SIGALRM);
-  ::sigdelset(&blocked_sigs, SIGINT);
+  ::sigemptyset(&blocked_sigs);
+  ::sigaddset(&blocked_sigs, SIGUSR1);
   assert(::sigprocmask(SIG_SETMASK, &blocked_sigs, nullptr) == 0);
   benchmark::run_all<Action>(argc, argv, init);
 }
