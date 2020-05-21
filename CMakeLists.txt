@@ -2,7 +2,7 @@ project(posix-bench LANGUAGES C CXX)
 
 cmake_minimum_required(VERSION 3.10)
 
-set(LIBS hdr_histogram_static pthread m hwloc)
+set(LIBS hdr_histogram_static pthread m hwloc rt)
 
 add_subdirectory(HdrHistogram_c)
 

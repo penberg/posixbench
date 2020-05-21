@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <time.h>
 
 #include <array>
@@ -131,6 +132,7 @@ static std::atomic<bool> alarm_fired = false;
 
 inline void alarm_signal_handler(int signum) {
   alarm_fired = true;
+  printf("ALARM\n");
 }
 
 inline std::optional<hwloc_obj_t> find_package(hwloc_obj_t obj) {
@@ -235,14 +237,28 @@ class LatencyBenchmark {
       if (hdr_init(1, 1000000, 3, &hist)) {
         assert(0);
       }
+
       struct ::sigaction sa;
       sa.sa_handler = alarm_signal_handler;
       sa.sa_flags = 0;
       ::sigemptyset(&sa.sa_mask);
       ::sigaction(SIGALRM, &sa, nullptr);
 
+      timer_t timerid;
+      struct sigevent sev;
+      sev.sigev_notify = SIGEV_SIGNAL;
+      sev.sigev_signo = SIGALRM;
+      sev.sigev_value.sival_ptr = &timerid;
+      assert(timer_create(CLOCK_REALTIME, &sev, &timerid) == 0);
+
       alarm_fired = false;
-      ::alarm(5);
+
+      ::itimerspec timeout;
+      timeout.it_value.tv_sec   = 5;
+      timeout.it_value.tv_nsec  = 0;
+      timeout.it_interval.tv_sec  = 0;
+      timeout.it_interval.tv_nsec = 0;
+      assert(timer_settime(timerid, 0, &timeout, nullptr) == 0);
 
       while (!alarm_fired) {
         auto diff = action.measured_operation(state);
@@ -281,9 +297,11 @@ class LatencyBenchmark {
 
     t.join();
 
+    printf("Sending SIGINT\n");
     for (std::thread &t : _interfering_threads) {
       ::pthread_kill(t.native_handle(), SIGINT);
     }
+    printf("Waiting...\n");
     for (std::thread &t : _interfering_threads) {
       t.join();
     }
