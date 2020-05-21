@@ -122,9 +122,13 @@ struct Config {
   std::string benchmark;
 };
 
+static std::atomic<bool> sigint_fired = false;
+
 static void signal_handler(int signum) {
-  /* Nothing to do. We send signals to threads to make sure they return from
+  /* SIGINT is sent by user who wants to quit or sent by the measuring thread
+     to the interfering threads to make sure they return from
      blocked system calls.  */
+  sigint_fired = true;
 }
 
 static std::atomic<bool> alarm_fired = false;
@@ -208,15 +212,6 @@ class LatencyBenchmark {
       _interfering_threads.resize(cfg.nr_interfering_threads);
       for (size_t tid = 0; tid < cfg.nr_interfering_threads; tid++) {
         std::thread interfering_thread([this, &cfg, &topology, &other_pu, &stop, &action, tid]() {
-          /* Set up a signal handler that does not restart system calls. When the
-             benchmark harness is about to stop, it sends a signal to all
-             intefering threads to return from any blocking system calls.  */
-          struct ::sigaction sa;
-          sa.sa_handler = signal_handler;
-          sa.sa_flags = 0;
-          ::sigemptyset(&sa.sa_mask);
-          ::sigaction(SIGINT, &sa, nullptr);
-
           hwloc_set_cpubind(topology, (*other_pu)->cpuset, HWLOC_CPUBIND_THREAD);
 
           auto state = action.make_state(_interfering_threads);
@@ -239,7 +234,7 @@ class LatencyBenchmark {
       alarm_fired = false;
       ::alarm(5);
 
-      while (!alarm_fired) {
+      while (!sigint_fired && !alarm_fired) {
         auto diff = action.measured_operation(state);
         hdr_record_value(hist, diff);
       }
@@ -413,15 +408,6 @@ class EnergyBenchmark {
       _interfering_threads.resize(cfg.nr_interfering_threads);
       for (size_t tid = 0; tid < cfg.nr_interfering_threads; tid++) {
         std::thread interfering_thread([this, &cfg, &topology, &other_pu, &stop, &action, tid]() {
-          /* Set up a signal handler that does not restart system calls. When the
-             benchmark harness is about to stop, it sends a signal to all
-             intefering threads to return from any blocking system calls.  */
-          struct ::sigaction sa;
-          sa.sa_handler = signal_handler;
-          sa.sa_flags = 0;
-          ::sigemptyset(&sa.sa_mask);
-          ::sigaction(SIGINT, &sa, nullptr);
-     
           hwloc_set_cpubind(topology, (*other_pu)->cpuset, HWLOC_CPUBIND_THREAD);
     
 	  auto state = action.make_state(_interfering_threads);
@@ -568,11 +554,21 @@ static Interference parse_interference(const std::string& raw_interference)
 
 template <typename T>
 static void run_all(int argc, char *argv[], std::optional<std::function<void(size_t)>> init = std::nullopt) {
-  struct ::sigaction sa;
-  sa.sa_handler = alarm_signal_handler;
-  sa.sa_flags = 0;
-  ::sigemptyset(&sa.sa_mask);
-  ::sigaction(SIGALRM, &sa, nullptr);
+  /* Set up a signal handler that does not restart system calls. When
+     the user or the benchmark harness is wants to stop, they send a
+     signal to all intefering threads to return from any blocking system
+     calls.  */
+  struct ::sigaction sa_int;
+  sa_int.sa_handler = signal_handler;
+  sa_int.sa_flags = 0;
+  ::sigemptyset(&sa_int.sa_mask);
+  ::sigaction(SIGINT, &sa_int, nullptr);
+     
+  struct ::sigaction sa_alrm;
+  sa_alrm.sa_handler = alarm_signal_handler;
+  sa_alrm.sa_flags = 0;
+  ::sigemptyset(&sa_alrm.sa_mask);
+  ::sigaction(SIGALRM, &sa_alrm, nullptr);
 
   std::string program = ::basename(argv[0]);
 	std::string raw_interference = "all";
