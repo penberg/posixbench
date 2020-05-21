@@ -60,6 +60,7 @@ struct Action {
   void other_operation(benchmark::NoState& state, size_t tid) {
     ::sigset_t set;
     ::sigemptyset(&set);
+    ::sigaddset(&set, SIGALRM);
     ::sigaddset(&set, SIGUSR1);
     ::sigaddset(&set, SIGINT);
     int sig;
@@ -68,7 +69,7 @@ struct Action {
     if (clock_gettime(CLOCK_MONOTONIC, &now) < 0) {
       assert(0);
     }
-    assert(sig == SIGUSR1 || sig == SIGINT);
+    assert(sig == SIGALRM || sig == SIGUSR1 || sig == SIGINT);
     remote_timestamps[tid] = benchmark::timespec_to_ns(&now);
     ::pthread_mutex_lock(&mutexes[tid]);
     signaled[tid] = true;
@@ -91,8 +92,10 @@ static void init(size_t nr_threads) {
 }
 
 int main(int argc, char *argv[]) {
-  ::sigset_t all_sigs;
-  ::sigfillset(&all_sigs);
-  assert(::sigprocmask(SIG_SETMASK, &all_sigs, nullptr) == 0);
+  ::sigset_t blocked_sigs;
+  ::sigfillset(&blocked_sigs);
+  ::sigdelset(&blocked_sigs, SIGALRM);
+  ::sigdelset(&blocked_sigs, SIGINT);
+  assert(::sigprocmask(SIG_SETMASK, &blocked_sigs, nullptr) == 0);
   benchmark::run_all<Action>(argc, argv, init);
 }
