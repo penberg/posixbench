@@ -8,9 +8,8 @@ struct Action {
   benchmark::NoState make_state(const benchmark::ThreadVector& ts) { return benchmark::NoState(ts); }
 
   void raw_operation(benchmark::NoState& state) {
-    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    assert(madvise(map, size, MADV_HUGEPAGE) == 0);
-    ::memset(map, 0xcd, size);
+    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_POPULATE, -1, 0);
+    assert(map != MAP_FAILED);
     ::munmap(map, size);
   }
 
@@ -19,9 +18,8 @@ struct Action {
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
     }
-    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    assert(madvise(map, size, MADV_HUGEPAGE) == 0);
-    ::memset(map, 0xcd, size);
+    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_POPULATE, -1, 0);
+    assert(map != MAP_FAILED);
     if (clock_gettime(CLOCK_MONOTONIC, &end) < 0) {
       assert(0);
     }

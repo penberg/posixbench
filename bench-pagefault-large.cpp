@@ -18,10 +18,9 @@ struct State {
 
   State(const benchmark::ThreadVector& ignored)
       : p{reinterpret_cast<char *>(::mmap(NULL, size, PROT_READ | PROT_WRITE,
-                                          MAP_ANONYMOUS | MAP_PRIVATE, -1,
+                                          MAP_ANONYMOUS | MAP_PRIVATE | MAP_HUGETLB, -1,
                                           0))} {
     assert(p != MAP_FAILED);
-    assert(madvise(p, size, MADV_HUGEPAGE) == 0);
   }
 
   ~State() { ::munmap(p, size); }
