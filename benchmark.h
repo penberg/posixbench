@@ -129,6 +129,12 @@ static void signal_handler(int signum) {
      blocked system calls.  */
 }
 
+static std::atomic<bool> alarm_fired = false;
+
+inline void alarm_signal_handler(int signum) {
+  alarm_fired = true;
+}
+
 inline std::optional<hwloc_obj_t> find_package(hwloc_obj_t obj) {
   while ((obj = obj->parent)) {
     if (obj->type == HWLOC_OBJ_PACKAGE) {
@@ -231,7 +237,16 @@ class LatencyBenchmark {
       if (hdr_init(1, 1000000, 3, &hist)) {
         assert(0);
       }
-      for (size_t i = 0; i < cfg.nr_iter; i++) {
+      struct ::sigaction sa;
+      sa.sa_handler = alarm_signal_handler;
+      sa.sa_flags = 0;
+      ::sigemptyset(&sa.sa_mask);
+      ::sigaction(SIGALRM, &sa, nullptr);
+
+      alarm_fired = false;
+      ::alarm(5);
+
+      for (size_t i = 0; i < cfg.nr_iter && !alarm_fired; i++) {
         auto diff = action.measured_operation(state);
         hdr_record_value(hist, diff);
       }
@@ -370,12 +385,6 @@ inline uint64_t measure_energy(Action& action, State& state, int msr_offset, uin
   printf("Measured energy for %f ms\n", double(time_diff(&start, &end)) / 1e6);
 
   return uint64_t((energy_end - energy_begin) * energy_unit * 1e9 / double(iterations));
-}
-
-static std::atomic<bool> alarm_fired = false;
-
-inline void alarm_signal_handler(int signum) {
-  alarm_fired = true;
 }
 
 template <class Action>
