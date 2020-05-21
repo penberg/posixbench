@@ -13,5 +13,5 @@ struct Op {
 };
 
 int main(int argc, char *argv[]) {
-  benchmark::run_all<benchmark::SymmetricAction<Op>, 100000>(argc, argv);
+  benchmark::run_all<benchmark::SymmetricAction<Op>>(argc, argv);
 }

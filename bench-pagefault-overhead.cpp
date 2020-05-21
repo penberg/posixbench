@@ -67,6 +67,6 @@ struct Action {
 
 
 int main(int argc, char *argv[]) {
-  benchmark::run_all<Action, 100>(argc, argv);
+  benchmark::run_all<Action>(argc, argv);
 }
 

@@ -118,8 +118,6 @@ struct Config {
   Scenario scenario;
   /// Number of interfering threads.
   size_t nr_interfering_threads = DEFAULT_NR_INTERFERING_THREADS;
-  /// Number of iterations.
-  size_t nr_iter;
   /// Name of the benchmark.
   std::string benchmark;
 };
@@ -246,7 +244,7 @@ class LatencyBenchmark {
       alarm_fired = false;
       ::alarm(5);
 
-      for (size_t i = 0; i < cfg.nr_iter && !alarm_fired; i++) {
+      while (!alarm_fired) {
         auto diff = action.measured_operation(state);
         hdr_record_value(hist, diff);
       }
@@ -294,29 +292,28 @@ class LatencyBenchmark {
   }
 };
 
-template <typename T, size_t nr_iter>
+template <typename T>
 static void run_latency_benchmark(Scenario scenario, std::ostream& out) {
   Config cfg;
-  cfg.nr_iter = nr_iter;
   cfg.scenario = scenario;
   LatencyBenchmark<T> benchmark;
   benchmark.run(cfg, out);
 }
 
-template <typename T, size_t nr_iter>
+template <typename T>
 static void run_latency_benchmarks(Interference interference, std::ostream& out) {
   out << "scenario,percentile,time" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
-    run_latency_benchmark<T, nr_iter>(Scenario::REMOTE_PACKAGE, out);
+    run_latency_benchmark<T>(Scenario::REMOTE_PACKAGE, out);
   }
   if (interference & Interference::REMOTE_CORE) {
-    run_latency_benchmark<T, nr_iter>(Scenario::REMOTE_CORE, out);
+    run_latency_benchmark<T>(Scenario::REMOTE_CORE, out);
   }
   if (interference & Interference::LOCAL_CORE) {
-    run_latency_benchmark<T, nr_iter>(Scenario::LOCAL_CORE, out);
+    run_latency_benchmark<T>(Scenario::LOCAL_CORE, out);
   }
   if (interference & Interference::NONE) {
-    run_latency_benchmark<T, nr_iter>(Scenario::NO_INTERFERENCE, out);
+    run_latency_benchmark<T>(Scenario::NO_INTERFERENCE, out);
   }
 }
 
@@ -471,7 +468,7 @@ class EnergyBenchmark {
       auto state = action.make_state(_interfering_threads);
 
       uint64_t nr_ops = 0;
-      while (!alarm_fired && nr_ops < cfg.nr_iter) {
+      while (!alarm_fired) {
         action.raw_operation(state);
 	nr_ops++;
       }
@@ -485,7 +482,7 @@ class EnergyBenchmark {
       size_t nr_samples = 10;
 
       /* Aim for 100 ms for the energy measurement period.  */
-      uint64_t iterations = std::min(uint64_t(1e8 / ns_per_op), cfg.nr_iter);
+      uint64_t iterations = uint64_t(1e8 / ns_per_op);
 
       printf("ns/op = %f, iterations = %lu\n", ns_per_op, iterations);
 
@@ -530,31 +527,30 @@ class EnergyBenchmark {
   }
 };
 
-template <typename T, size_t nr_iter>
+template <typename T>
 static void run_energy_benchmark(std::string benchmark, Scenario scenario,
                                  std::ostream& out) {
   Config cfg;
   cfg.benchmark = benchmark;
-  cfg.nr_iter = nr_iter;
   cfg.scenario = scenario;
   EnergyBenchmark<T> bench;
   bench.run(cfg, out);
 }
 
-template <typename T, size_t nr_iter>
+template <typename T>
 static void run_energy_benchmarks(std::string benchmark, Interference interference, std::ostream &out) {
   out << "Benchmark,Scenario,PackageEnergyPerOperation(nJ),PowerPlane0EnergyPerOperation(nJ),PowerPlane1EnergyPerOperation(nJ),DRAMEnergyPerOperation(nJ)" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
-    run_energy_benchmark<T, nr_iter>(benchmark, Scenario::REMOTE_PACKAGE, out);
+    run_energy_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, out);
   }
   if (interference & Interference::REMOTE_CORE) {
-    run_energy_benchmark<T, nr_iter>(benchmark, Scenario::REMOTE_CORE, out);
+    run_energy_benchmark<T>(benchmark, Scenario::REMOTE_CORE, out);
   }
   if (interference & Interference::LOCAL_CORE) {
-    run_energy_benchmark<T, nr_iter>(benchmark, Scenario::LOCAL_CORE, out);
+    run_energy_benchmark<T>(benchmark, Scenario::LOCAL_CORE, out);
   }
   if (interference & Interference::NONE) {
-    run_energy_benchmark<T, nr_iter>(benchmark, Scenario::NO_INTERFERENCE, out);
+    run_energy_benchmark<T>(benchmark, Scenario::NO_INTERFERENCE, out);
   }
 }
 
@@ -575,7 +571,7 @@ static Interference parse_interference(const std::string& raw_interference)
   }
 }
 
-template <typename T, size_t nr_iter = 1000000>
+template <typename T>
 static void run_all(int argc, char *argv[], std::optional<std::function<void(size_t)>> init = std::nullopt) {
   std::string program = ::basename(argv[0]);
 	std::string raw_interference = "all";
@@ -606,12 +602,12 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
     if (latency_output) {
       std::ofstream output;
       output.open(*latency_output);
-      run_latency_benchmarks<T, nr_iter>(interference, output);
+      run_latency_benchmarks<T>(interference, output);
     }
     if (energy_output) {
       std::ofstream output;
       output.open(*energy_output);
-      run_energy_benchmarks<T, nr_iter>(program, interference, output);
+      run_energy_benchmarks<T>(program, interference, output);
     }
   } catch (const std::exception& e) {
     std::cerr << "error: " << e.what() << std::endl;
