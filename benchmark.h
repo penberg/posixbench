@@ -235,11 +235,6 @@ class LatencyBenchmark {
       if (hdr_init(1, 1000000, 3, &hist)) {
         assert(0);
       }
-      struct ::sigaction sa;
-      sa.sa_handler = alarm_signal_handler;
-      sa.sa_flags = 0;
-      ::sigemptyset(&sa.sa_mask);
-      ::sigaction(SIGALRM, &sa, nullptr);
 
       alarm_fired = false;
       ::alarm(5);
@@ -573,6 +568,12 @@ static Interference parse_interference(const std::string& raw_interference)
 
 template <typename T>
 static void run_all(int argc, char *argv[], std::optional<std::function<void(size_t)>> init = std::nullopt) {
+  struct ::sigaction sa;
+  sa.sa_handler = alarm_signal_handler;
+  sa.sa_flags = 0;
+  ::sigemptyset(&sa.sa_mask);
+  ::sigaction(SIGALRM, &sa, nullptr);
+
   std::string program = ::basename(argv[0]);
 	std::string raw_interference = "all";
   std::optional<std::string> latency_output;
