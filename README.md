@@ -2,9 +2,7 @@
 
 ## Getting Started
 
-### System configuration
-
-Before you run the benchmark, you must configure the following things on your system for benchmark isolation.
+You need to configure your machine before running the benchmarks.
 
 **Disable TurboBoost.**
 
@@ -12,6 +10,12 @@ Before you run the benchmark, you must configure the following things on your sy
 
 ```
 sudo cpupower --cpu all frequency-set --governor performance
+```
+
+**Configure huge pages:**
+
+```
+sudo sysctl -w vm.nr_hugepages=512
 ```
 
 **Kill background processes and services.**
