@@ -389,12 +389,23 @@ inline uint64_t measure_energy(Action& action, State& state, int msr_offset, dou
   return uint64_t((energy_end - energy_begin) * energy_unit * 1e9 / double(iterations));
 }
 
+struct EnergyConfig {
+  /// Test scenario.
+  Scenario scenario;
+  /// Number of interfering threads.
+  size_t nr_interfering_threads = DEFAULT_NR_INTERFERING_THREADS;
+  /// Name of the benchmark.
+  std::string benchmark;
+  /// Number of energy measurement samples.
+  int nr_samples;
+};
+
 template <class Action>
 class EnergyBenchmark {
   ThreadVector _interfering_threads;
 
  public:
-  void run(const Config &cfg, std::ostream &out) {
+  void run(const EnergyConfig &cfg, std::ostream &out) {
 #if 0
     printf("# %s: Measuring thread on CPU %d, intefering thread on CPU %d\n",
            to_string(cfg.scenario), pu->os_index, (*other_pu)->os_index);
@@ -461,9 +472,7 @@ class EnergyBenchmark {
         assert(0);
       }
 
-      size_t nr_samples = 1;
-
-      for (size_t j = 0; j < nr_samples; j++) {
+      for (int j = 0; j < cfg.nr_samples; j++) {
         auto state_pkg = action.make_state(_interfering_threads);
         uint64_t pkg_energy  = measure_energy(action, state_pkg, MSR_PKG_ENERGY_STATUS, energy_unit);
 #if 0
@@ -505,29 +514,29 @@ class EnergyBenchmark {
 };
 
 template <typename T>
-static void run_energy_benchmark(std::string benchmark, Scenario scenario,
-                                 std::ostream& out) {
-  Config cfg;
+static void run_energy_benchmark(std::string benchmark, Scenario scenario, int nr_samples, std::ostream& out) {
+  EnergyConfig cfg;
   cfg.benchmark = benchmark;
   cfg.scenario = scenario;
+  cfg.nr_samples = nr_samples;
   EnergyBenchmark<T> bench;
   bench.run(cfg, out);
 }
 
 template <typename T>
-static void run_energy_benchmarks(std::string benchmark, Interference interference, std::ostream &out) {
+static void run_energy_benchmarks(std::string benchmark, Interference interference, int nr_samples, std::ostream &out) {
   out << "Benchmark,Scenario,PackageEnergyPerOperation(nJ),PowerPlane0EnergyPerOperation(nJ),PowerPlane1EnergyPerOperation(nJ),DRAMEnergyPerOperation(nJ)" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
-    run_energy_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, out);
+    run_energy_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, nr_samples, out);
   }
   if (interference & Interference::REMOTE_CORE) {
-    run_energy_benchmark<T>(benchmark, Scenario::REMOTE_CORE, out);
+    run_energy_benchmark<T>(benchmark, Scenario::REMOTE_CORE, nr_samples, out);
   }
   if (interference & Interference::LOCAL_CORE) {
-    run_energy_benchmark<T>(benchmark, Scenario::LOCAL_CORE, out);
+    run_energy_benchmark<T>(benchmark, Scenario::LOCAL_CORE, nr_samples, out);
   }
   if (interference & Interference::NONE) {
-    run_energy_benchmark<T>(benchmark, Scenario::NO_INTERFERENCE, out);
+    run_energy_benchmark<T>(benchmark, Scenario::NO_INTERFERENCE, nr_samples, out);
   }
 }
 
@@ -570,8 +579,9 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
 	std::string raw_interference = "all";
   std::optional<std::string> latency_output;
   std::optional<std::string> energy_output;
+  std::optional<int> nr_samples;
   int c;
-  while ((c = getopt(argc, argv, "i:l:e:")) != -1) {
+  while ((c = getopt(argc, argv, "i:l:e:s:")) != -1) {
     switch (c) {
       case 'i':
         raw_interference = optarg;
@@ -581,6 +591,9 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
         break;
       case 'e':
         energy_output = optarg;
+        break;
+      case 's':
+        nr_samples = strtol(optarg, nullptr, 10);
         break;
       default:
         usage(program);
@@ -598,9 +611,10 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
       run_latency_benchmarks<T>(interference, output);
     }
     if (energy_output) {
+      constexpr int DEFAULT_NR_SAMPLES = 30;
       std::ofstream output;
       output.open(*energy_output);
-      run_energy_benchmarks<T>(program, interference, output);
+      run_energy_benchmarks<T>(program, interference, nr_samples.value_or(DEFAULT_NR_SAMPLES), output);
     }
   } catch (const std::exception& e) {
     std::cerr << "error: " << e.what() << std::endl;
