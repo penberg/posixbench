@@ -120,6 +120,8 @@ struct Config {
   size_t nr_interfering_threads = DEFAULT_NR_INTERFERING_THREADS;
   /// Name of the benchmark.
   std::string benchmark;
+  /// Latency measurement duration (in seconds).
+  int duration;
 };
 
 static std::atomic<bool> sigint_fired = false;
@@ -233,7 +235,7 @@ class LatencyBenchmark {
       }
 
       alarm_fired = false;
-      ::alarm(5);
+      ::alarm(cfg.duration);
 
       while (!sigint_fired && !alarm_fired) {
         auto diff = action.measured_operation(state);
@@ -290,28 +292,29 @@ class LatencyBenchmark {
 };
 
 template <typename T>
-static void run_latency_benchmark(const std::string benchmark, Scenario scenario, std::ostream& out) {
+static void run_latency_benchmark(const std::string benchmark, Scenario scenario, int duration, std::ostream& out) {
   Config cfg;
   cfg.benchmark = benchmark;
   cfg.scenario = scenario;
+  cfg.duration = duration;
   LatencyBenchmark<T> bench;
   bench.run(cfg, out);
 }
 
 template <typename T>
-static void run_latency_benchmarks(const std::string benchmark, Interference interference, std::ostream& out) {
+static void run_latency_benchmarks(const std::string benchmark, Interference interference, int duration, std::ostream& out) {
   out << "scenario,percentile,time" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
-    run_latency_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, out);
+    run_latency_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, duration, out);
   }
   if (interference & Interference::REMOTE_CORE) {
-    run_latency_benchmark<T>(benchmark, Scenario::REMOTE_CORE, out);
+    run_latency_benchmark<T>(benchmark, Scenario::REMOTE_CORE, duration, out);
   }
   if (interference & Interference::LOCAL_CORE) {
-    run_latency_benchmark<T>(benchmark, Scenario::LOCAL_CORE, out);
+    run_latency_benchmark<T>(benchmark, Scenario::LOCAL_CORE, duration, out);
   }
   if (interference & Interference::NONE) {
-    run_latency_benchmark<T>(benchmark, Scenario::NO_INTERFERENCE, out);
+    run_latency_benchmark<T>(benchmark, Scenario::NO_INTERFERENCE, duration, out);
   }
 }
 
@@ -581,16 +584,20 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
   std::string program = ::basename(argv[0]);
 	std::string raw_interference = "all";
   std::optional<std::string> latency_output;
+  std::optional<int> duration;
   std::optional<std::string> energy_output;
   std::optional<int> nr_samples;
   int c;
-  while ((c = getopt(argc, argv, "i:l:e:s:")) != -1) {
+  while ((c = getopt(argc, argv, "i:l:d:e:s:")) != -1) {
     switch (c) {
       case 'i':
         raw_interference = optarg;
         break;
       case 'l':
         latency_output = optarg;
+        break;
+      case 'd':
+        duration = strtol(optarg, nullptr, 10);
         break;
       case 'e':
         energy_output = optarg;
@@ -609,9 +616,10 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
   try {
     auto interference = parse_interference(raw_interference); 
     if (latency_output) {
+      constexpr int DEFAULT_DURATION = 30;
       std::ofstream output;
       output.open(*latency_output);
-      run_latency_benchmarks<T>(program, interference, output);
+      run_latency_benchmarks<T>(program, interference, duration.value_or(DEFAULT_DURATION), output);
     }
     if (energy_output) {
       constexpr int DEFAULT_NR_SAMPLES = 30;
