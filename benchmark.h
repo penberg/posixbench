@@ -327,8 +327,6 @@ static void usage(std::string program)
 enum {
   MSR_PKG_ENERGY_STATUS  = 0x611,
   MSR_RAPL_POWER_UNIT    = 0x606,
-  MSR_PP0_ENERGY_STATUS  = 0x639,
-  MSR_PP1_ENERGY_STATUS  = 0x641,
   MSR_DRAM_ENERGY_STATUS = 0x619,
 };
 
@@ -481,12 +479,6 @@ class EnergyBenchmark {
       for (int j = 0; j < cfg.nr_samples; j++) {
         auto state_pkg = action.make_state(_interfering_threads);
         uint64_t pkg_energy  = measure_energy(action, state_pkg, MSR_PKG_ENERGY_STATUS, energy_unit);
-#if 0
-        uint64_t p0_energy   = measure_energy(action, state, MSR_PP0_ENERGY_STATUS, energy_unit);
-        uint64_t p1_energy   = measure_energy(action, state, MSR_PP1_ENERGY_STATUS, energy_unit);
-#endif
-        uint64_t p0_energy   = 0;
-        uint64_t p1_energy   = 0;
         auto state_dram = action.make_state(_interfering_threads);
         uint64_t dram_energy = measure_energy(action, state_dram, MSR_DRAM_ENERGY_STATUS, energy_unit);
 
@@ -495,10 +487,6 @@ class EnergyBenchmark {
         out << to_string(cfg.scenario);
         out << ",";
         out << pkg_energy;
-        out << ",";
-        out << p0_energy;
-        out << ",";
-        out << p1_energy;
         out << ",";
         out << dram_energy;
         out << std::endl;
@@ -531,7 +519,7 @@ static void run_energy_benchmark(std::string benchmark, Scenario scenario, int n
 
 template <typename T>
 static void run_energy_benchmarks(std::string benchmark, Interference interference, int nr_samples, std::ostream &out) {
-  out << "Benchmark,Scenario,PackageEnergyPerOperation(nJ),PowerPlane0EnergyPerOperation(nJ),PowerPlane1EnergyPerOperation(nJ),DRAMEnergyPerOperation(nJ)" << std::endl;
+  out << "Benchmark,Scenario,PackageEnergyPerOperation(nJ),DRAMEnergyPerOperation(nJ)" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
     run_energy_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, nr_samples, out);
   }
