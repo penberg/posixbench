@@ -358,11 +358,22 @@ inline void wait_for_rapl_sampling_period_begin() {
   }
 }
 
+struct EnergyConfig {
+  /// Test scenario.
+  Scenario scenario;
+  /// Number of interfering threads.
+  size_t nr_interfering_threads = DEFAULT_NR_INTERFERING_THREADS;
+  /// Name of the benchmark.
+  std::string benchmark;
+  /// Number of energy measurement samples.
+  int nr_samples;
+};
+
 /* Measure mean energy per operation (EPO) by running an operation for 1 second
    and dividing the total amount of energy by the number of operations
    executed.  */
 template<typename Action, typename State>
-inline uint64_t measure_energy(Action& action, State& state, int msr_offset, double energy_unit)
+inline void measure_energy(const EnergyConfig &cfg, std::ostream &out, Action& action, State& state, double energy_unit)
 {
   uint64_t iterations = 0;
 
@@ -375,12 +386,15 @@ inline uint64_t measure_energy(Action& action, State& state, int msr_offset, dou
   }
   wait_for_rapl_sampling_period_begin();
 
-  uint64_t energy_begin = read_msr(msr_offset);
+  uint64_t pkg_energy_begin = read_msr(MSR_PKG_ENERGY_STATUS);
+  uint64_t dram_energy_begin = read_msr(MSR_DRAM_ENERGY_STATUS);
+
   while (!alarm_fired) {
     action.raw_operation(state);
     iterations++;
   }
-  uint64_t energy_end = read_msr(msr_offset);
+  uint64_t pkg_energy_end = read_msr(MSR_PKG_ENERGY_STATUS);
+  uint64_t dram_energy_end = read_msr(MSR_DRAM_ENERGY_STATUS);
 
   struct timespec end;
   if (clock_gettime(CLOCK_MONOTONIC, &end) < 0) {
@@ -389,19 +403,20 @@ inline uint64_t measure_energy(Action& action, State& state, int msr_offset, dou
 
   printf("Measured energy for %f ms\n", double(time_diff(&start, &end)) / 1e6);
 
-  return uint64_t((energy_end - energy_begin) * energy_unit * 1e9 / double(iterations));
-}
+  uint64_t pkg_energy = uint64_t((pkg_energy_end - pkg_energy_begin) * energy_unit * 1e9 / double(iterations));
+  uint64_t dram_energy = uint64_t((dram_energy_end - dram_energy_begin) * energy_unit * 1e9 / double(iterations));
 
-struct EnergyConfig {
-  /// Test scenario.
-  Scenario scenario;
-  /// Number of interfering threads.
-  size_t nr_interfering_threads = DEFAULT_NR_INTERFERING_THREADS;
-  /// Name of the benchmark.
-  std::string benchmark;
-  /// Number of energy measurement samples.
-  int nr_samples;
-};
+  out << cfg.benchmark;
+  out << ",";
+  out << to_string(cfg.scenario);
+  out << ",";
+  out << iterations;
+  out << ",";
+  out << pkg_energy;
+  out << ",";
+  out << dram_energy;
+  out << std::endl;
+}
 
 template <class Action>
 class EnergyBenchmark {
@@ -477,19 +492,8 @@ class EnergyBenchmark {
       }
 
       for (int j = 0; j < cfg.nr_samples; j++) {
-        auto state_pkg = action.make_state(_interfering_threads);
-        uint64_t pkg_energy  = measure_energy(action, state_pkg, MSR_PKG_ENERGY_STATUS, energy_unit);
-        auto state_dram = action.make_state(_interfering_threads);
-        uint64_t dram_energy = measure_energy(action, state_dram, MSR_DRAM_ENERGY_STATUS, energy_unit);
-
-        out << cfg.benchmark;
-        out << ",";
-        out << to_string(cfg.scenario);
-        out << ",";
-        out << pkg_energy;
-        out << ",";
-        out << dram_energy;
-        out << std::endl;
+        auto state = action.make_state(_interfering_threads);
+        measure_energy(cfg, out, action, state, energy_unit);
       }
       stop.store(true);
     });
