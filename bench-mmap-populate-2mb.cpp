@@ -1,6 +1,7 @@
 #include "benchmark.h"
 
 #include <sys/mman.h>
+#include <linux/mman.h>
 
 static constexpr size_t size = 2 * 1024 * 1024; /* 2 MB */
 
@@ -8,20 +9,22 @@ struct Action {
   benchmark::NoState make_state(const benchmark::ThreadVector& ts) { return benchmark::NoState(ts); }
 
   void raw_operation(benchmark::NoState& state) {
-    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_HUGE_2MB | MAP_POPULATE, -1, 0);
+    assert(map != MAP_FAILED);
     ::munmap(map, size);
   }
 
   uint64_t measured_operation(benchmark::NoState& state) {
-    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
     }
-    ::munmap(map, size);
+    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_HUGE_2MB | MAP_POPULATE, -1, 0);
+    assert(map != MAP_FAILED);
     if (clock_gettime(CLOCK_MONOTONIC, &end) < 0) {
       assert(0);
     }
+    ::munmap(map, size);
     uint64_t start_ns = benchmark::timespec_to_ns(&start);
     uint64_t end_ns = benchmark::timespec_to_ns(&end);
     return end_ns - start_ns;

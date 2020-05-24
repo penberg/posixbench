@@ -50,32 +50,32 @@ target_link_libraries(bench-pagefault-small ${LIBS})
 add_executable(bench-pagefault-large bench-pagefault-large.cpp)
 target_link_libraries(bench-pagefault-large ${LIBS})
 
-add_executable(bench-mmap-munmap bench-mmap-munmap.cpp)
-target_link_libraries(bench-mmap-munmap ${LIBS})
-
-add_executable(bench-mmap-populate-munmap bench-mmap-populate-munmap.cpp)
-target_link_libraries(bench-mmap-populate-munmap ${LIBS})
-
 add_executable(bench-mprotect bench-mprotect.cpp)
 target_link_libraries(bench-mprotect ${LIBS})
 
-add_executable(bench-mmap bench-mmap.cpp)
-target_link_libraries(bench-mmap ${LIBS})
+add_executable(bench-mmap-4kb bench-mmap-4kb.cpp)
+target_link_libraries(bench-mmap-4kb ${LIBS})
 
-add_executable(bench-mmap-populate-small bench-mmap-populate-small.cpp)
-target_link_libraries(bench-mmap-populate-small ${LIBS})
+add_executable(bench-mmap-2mb bench-mmap-2mb.cpp)
+target_link_libraries(bench-mmap-2mb ${LIBS})
 
-add_executable(bench-mmap-populate-large bench-mmap-populate-large.cpp)
-target_link_libraries(bench-mmap-populate-large ${LIBS})
+add_executable(bench-munmap-4kb bench-munmap-4kb.cpp)
+target_link_libraries(bench-munmap-4kb ${LIBS})
 
-add_executable(bench-munmap bench-munmap.cpp)
-target_link_libraries(bench-munmap ${LIBS})
+add_executable(bench-munmap-2mb bench-munmap-2mb.cpp)
+target_link_libraries(bench-munmap-2mb ${LIBS})
 
-add_executable(bench-munmap-populated-small bench-munmap-populated-small.cpp)
-target_link_libraries(bench-munmap-populated-small ${LIBS})
+add_executable(bench-mmap-populate-4kb bench-mmap-populate-4kb.cpp)
+target_link_libraries(bench-mmap-populate-4kb ${LIBS})
 
-add_executable(bench-munmap-populated-large bench-munmap-populated-large.cpp)
-target_link_libraries(bench-munmap-populated-large ${LIBS})
+add_executable(bench-mmap-populate-2mb bench-mmap-populate-2mb.cpp)
+target_link_libraries(bench-mmap-populate-2mb ${LIBS})
+
+add_executable(bench-munmap-populated-4kb bench-munmap-populated-4kb.cpp)
+target_link_libraries(bench-munmap-populated-4kb ${LIBS})
+
+add_executable(bench-munmap-populated-2mb bench-munmap-populated-2mb.cpp)
+target_link_libraries(bench-munmap-populated-2mb ${LIBS})
 
 add_executable(bench-eventfd bench-eventfd.cpp)
 target_link_libraries(bench-eventfd ${LIBS})
