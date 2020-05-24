@@ -230,7 +230,7 @@ class LatencyBenchmark {
       hwloc_set_cpubind(topology, pu->cpuset, HWLOC_CPUBIND_THREAD);
       auto state = action.make_state(_interfering_threads);
       struct hdr_histogram *hist;
-      if (hdr_init(1, 1000000, 3, &hist)) {
+      if (hdr_init(1, 1e9, 3, &hist)) {
         assert(0);
       }
 
@@ -239,7 +239,7 @@ class LatencyBenchmark {
 
       while (!sigint_fired && !alarm_fired) {
         auto diff = action.measured_operation(state);
-        hdr_record_value(hist, diff);
+        assert(hdr_record_value(hist, diff));
       }
       stop.store(true);
       out << to_string(cfg.scenario);
