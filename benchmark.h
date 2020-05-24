@@ -245,6 +245,12 @@ class LatencyBenchmark {
       out << ",";
       out << hdr_mean(hist);
       out << std::endl;
+      out << to_string(cfg.scenario);
+      out << ",";
+      out << "stddev";
+      out << ",";
+      out << hdr_stddev(hist);
+      out << std::endl;
       for (size_t percentile = 1; percentile < 100; percentile++) {
         out << to_string(cfg.scenario);
 	out << ",";
