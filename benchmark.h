@@ -207,6 +207,7 @@ class LatencyBenchmark {
     if (cfg.scenario == NO_INTERFERENCE && !action.supports_non_interference()) {
         return;
     }
+    std::cout << "Measuring latency for " << cfg.benchmark << " (" << to_string(cfg.scenario) << ") ..." << std::endl;
     std::atomic<bool> stop = false;
     if (other_pu) {
       _interfering_threads.resize(cfg.nr_interfering_threads);
@@ -429,6 +430,7 @@ class EnergyBenchmark {
     if (!action.supports_energy_measurement()) {
       return;
     }
+    std::cout << "Measuring energy for " << cfg.benchmark << " (" << to_string(cfg.scenario) << ") ..." << std::endl;
     std::atomic<bool> stop = false;
     if (other_pu) {
       _interfering_threads.resize(cfg.nr_interfering_threads);
