@@ -235,8 +235,8 @@ class LatencyBenchmark {
         assert(0);
       }
 
-      alarm_fired = false;
       ::alarm(cfg.duration);
+      alarm_fired = false;
 
       while (!sigint_fired && !alarm_fired) {
         auto diff = action.measured_operation(state);
@@ -378,8 +378,8 @@ inline void measure_energy(const EnergyConfig &cfg, std::ostream &out, Action& a
 {
   uint64_t iterations = 0;
 
-  alarm_fired = false;
   ::alarm(1);
+  alarm_fired = false;
 
   struct timespec start;
   if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
