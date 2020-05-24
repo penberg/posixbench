@@ -28,9 +28,9 @@ struct Action {
 
   void raw_operation(benchmark::NoState& state) {
     auto other_thread = const_cast<std::thread&>(state.interfering_threads[remote_tid]).native_handle();
-    ::pthread_kill(other_thread, SIGUSR1);
     ::pthread_mutex_lock(&mutexes[remote_tid]);
     signaled[remote_tid] = false;
+    ::pthread_kill(other_thread, SIGUSR1);
     while (!signaled[remote_tid]) {
       ::pthread_cond_wait(&cond_vars[remote_tid], &mutexes[remote_tid]);
     }
@@ -44,9 +44,9 @@ struct Action {
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
     }
-    ::pthread_kill(other_thread, SIGUSR1);
     ::pthread_mutex_lock(&mutexes[remote_tid]);
     signaled[remote_tid] = false;
+    ::pthread_kill(other_thread, SIGUSR1);
     while (!signaled[remote_tid]) {
       ::pthread_cond_wait(&cond_vars[remote_tid], &mutexes[remote_tid]);
     }
