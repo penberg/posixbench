@@ -54,6 +54,7 @@ struct Action {
     uint64_t start_ns = benchmark::timespec_to_ns(&start);
     uint64_t end_ns = remote_timestamps[remote_tid];
     remote_tid = (remote_tid + 1) % remote_timestamps.size();
+    assert(end_ns > start_ns);
     return end_ns - start_ns;
   }
 

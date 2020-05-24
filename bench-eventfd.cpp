@@ -61,6 +61,7 @@ struct Action {
     }
     remote_idx = (remote_idx + 1) % remote_efds.size();
     uint64_t start_ns = benchmark::timespec_to_ns(&start);
+    assert(end_ns > start_ns);
     return end_ns - start_ns;
   }
 
