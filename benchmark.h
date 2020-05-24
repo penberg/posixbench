@@ -320,7 +320,7 @@ static void run_latency_benchmarks(const std::string benchmark, Interference int
 
 static void usage(std::string program)
 {
-  std::cout << "usage: " << program << "[-i <interference>] [-l <path>]" << std::endl;
+  std::cout << "usage: " << program << " [-i <interference>] [-l <latency-output>] [-d <latency-duration>] [-e <energy-output>] [-s <energy samples>]" << std::endl;
 }
 
 /* RAPL MSRs  */
