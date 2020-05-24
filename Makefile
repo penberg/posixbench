@@ -64,7 +64,7 @@ $(BENCHMARKS):
 perf:
 	$(E) "  PERF"
 	$(Q) mkdir -p "$(RESULTS_PERF)"
-	$(Q) $(foreach interference,none smt mc numa,$(foreach benchmark,$(BENCHMARKS),perf record -g ./build/$(benchmark) -i $(interference) -l tmp && perf script -f > "$(RESULTS_PERF)/$(benchmark)-$(interference).out";))
+	$(Q) $(foreach interference,none smt mc numa,$(foreach benchmark,$(BENCHMARKS),perf record -g ./build/$(benchmark) -i $(interference) -l tmp -d 5 && perf script -f > "$(RESULTS_PERF)/$(benchmark)-$(interference).out";))
 .PHONY: perf
 
 report:
