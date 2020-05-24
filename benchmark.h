@@ -355,9 +355,17 @@ inline void wait_for_rapl_sampling_period_begin() {
   }
 }
 
+/* Measure mean energy per operation (EPO) by running an operation for 1 second
+   and dividing the total amount of energy by the number of operations
+   executed.  */
 template<typename Action, typename State>
-inline uint64_t measure_energy(Action& action, State& state, int msr_offset, uint64_t iterations, double energy_unit)
+inline uint64_t measure_energy(Action& action, State& state, int msr_offset, double energy_unit)
 {
+  uint64_t iterations = 0;
+
+  alarm_fired = false;
+  ::alarm(1);
+
   struct timespec start;
   if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
     assert(0);
@@ -365,8 +373,9 @@ inline uint64_t measure_energy(Action& action, State& state, int msr_offset, uin
   wait_for_rapl_sampling_period_begin();
 
   uint64_t energy_begin = read_msr(msr_offset);
-  for (uint64_t i = 0; i < iterations; i++) {
+  while (!alarm_fired) {
     action.raw_operation(state);
+    iterations++;
   }
   uint64_t energy_end = read_msr(msr_offset);
 
@@ -452,38 +461,19 @@ class EnergyBenchmark {
         assert(0);
       }
 
-      auto state = action.make_state(_interfering_threads);
-
-      uint64_t nr_ops = 0;
-      while (!alarm_fired) {
-        action.raw_operation(state);
-	nr_ops++;
-      }
-      struct timespec end_ts;
-      if (clock_gettime(CLOCK_MONOTONIC, &end_ts) < 0) {
-        assert(0);
-      }
-
-      double ns_per_op = time_diff(&start_ts, &end_ts) / double(nr_ops);
-
-      size_t nr_samples = 10;
-
-      /* Aim for 100 ms for the energy measurement period.  */
-      uint64_t iterations = uint64_t(1e8 / ns_per_op);
-
-      printf("ns/op = %f, iterations = %lu\n", ns_per_op, iterations);
+      size_t nr_samples = 1;
 
       for (size_t j = 0; j < nr_samples; j++) {
         auto state_pkg = action.make_state(_interfering_threads);
-        uint64_t pkg_energy  = measure_energy(action, state_pkg, MSR_PKG_ENERGY_STATUS, iterations, energy_unit);
+        uint64_t pkg_energy  = measure_energy(action, state_pkg, MSR_PKG_ENERGY_STATUS, energy_unit);
 #if 0
-        uint64_t p0_energy   = measure_energy(action, state, MSR_PP0_ENERGY_STATUS, iterations, energy_unit);
-        uint64_t p1_energy   = measure_energy(action, state, MSR_PP1_ENERGY_STATUS, iterations, energy_unit);
+        uint64_t p0_energy   = measure_energy(action, state, MSR_PP0_ENERGY_STATUS, energy_unit);
+        uint64_t p1_energy   = measure_energy(action, state, MSR_PP1_ENERGY_STATUS, energy_unit);
 #endif
         uint64_t p0_energy   = 0;
         uint64_t p1_energy   = 0;
         auto state_dram = action.make_state(_interfering_threads);
-        uint64_t dram_energy = measure_energy(action, state_dram, MSR_DRAM_ENERGY_STATUS, iterations, energy_unit);
+        uint64_t dram_energy = measure_energy(action, state_dram, MSR_DRAM_ENERGY_STATUS, energy_unit);
 
         out << cfg.benchmark;
         out << ",";
