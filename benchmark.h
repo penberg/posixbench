@@ -290,27 +290,28 @@ class LatencyBenchmark {
 };
 
 template <typename T>
-static void run_latency_benchmark(Scenario scenario, std::ostream& out) {
+static void run_latency_benchmark(const std::string benchmark, Scenario scenario, std::ostream& out) {
   Config cfg;
+  cfg.benchmark = benchmark;
   cfg.scenario = scenario;
-  LatencyBenchmark<T> benchmark;
-  benchmark.run(cfg, out);
+  LatencyBenchmark<T> bench;
+  bench.run(cfg, out);
 }
 
 template <typename T>
-static void run_latency_benchmarks(Interference interference, std::ostream& out) {
+static void run_latency_benchmarks(const std::string benchmark, Interference interference, std::ostream& out) {
   out << "scenario,percentile,time" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
-    run_latency_benchmark<T>(Scenario::REMOTE_PACKAGE, out);
+    run_latency_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, out);
   }
   if (interference & Interference::REMOTE_CORE) {
-    run_latency_benchmark<T>(Scenario::REMOTE_CORE, out);
+    run_latency_benchmark<T>(benchmark, Scenario::REMOTE_CORE, out);
   }
   if (interference & Interference::LOCAL_CORE) {
-    run_latency_benchmark<T>(Scenario::LOCAL_CORE, out);
+    run_latency_benchmark<T>(benchmark, Scenario::LOCAL_CORE, out);
   }
   if (interference & Interference::NONE) {
-    run_latency_benchmark<T>(Scenario::NO_INTERFERENCE, out);
+    run_latency_benchmark<T>(benchmark, Scenario::NO_INTERFERENCE, out);
   }
 }
 
@@ -610,7 +611,7 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
     if (latency_output) {
       std::ofstream output;
       output.open(*latency_output);
-      run_latency_benchmarks<T>(interference, output);
+      run_latency_benchmarks<T>(program, interference, output);
     }
     if (energy_output) {
       constexpr int DEFAULT_NR_SAMPLES = 30;
