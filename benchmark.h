@@ -401,8 +401,7 @@ inline void measure_energy(const EnergyConfig &cfg, std::ostream &out, Action& a
     assert(0);
   }
 
-  printf("Measured energy for %f ms\n", double(time_diff(&start, &end)) / 1e6);
-
+  uint64_t duration = time_diff(&start, &end);
   uint64_t pkg_energy = uint64_t((pkg_energy_end - pkg_energy_begin) * energy_unit * 1e9 / double(iterations));
   uint64_t dram_energy = uint64_t((dram_energy_end - dram_energy_begin) * energy_unit * 1e9 / double(iterations));
 
@@ -411,6 +410,8 @@ inline void measure_energy(const EnergyConfig &cfg, std::ostream &out, Action& a
   out << to_string(cfg.scenario);
   out << ",";
   out << iterations;
+  out << ",";
+  out << double(duration) / double(iterations);
   out << ",";
   out << pkg_energy;
   out << ",";
@@ -523,7 +524,7 @@ static void run_energy_benchmark(std::string benchmark, Scenario scenario, int n
 
 template <typename T>
 static void run_energy_benchmarks(std::string benchmark, Interference interference, int nr_samples, std::ostream &out) {
-  out << "Benchmark,Scenario,PackageEnergyPerOperation(nJ),DRAMEnergyPerOperation(nJ)" << std::endl;
+  out << "Benchmark,Scenario,Operations,DurationPerOperation(ns),PackageEnergyPerOperation(nJ),DRAMEnergyPerOperation(nJ)" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
     run_energy_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, nr_samples, out);
   }
