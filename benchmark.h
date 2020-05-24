@@ -210,6 +210,7 @@ class LatencyBenchmark {
         return;
     }
     std::cout << "Measuring latency for " << cfg.benchmark << " (" << to_string(cfg.scenario) << ") ..." << std::endl;
+    sigint_fired = false;
     std::atomic<bool> stop = false;
     if (other_pu) {
       _interfering_threads.resize(cfg.nr_interfering_threads);
