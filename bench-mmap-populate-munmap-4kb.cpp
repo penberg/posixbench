@@ -8,18 +8,18 @@ struct Action {
   benchmark::NoState make_state(const benchmark::ThreadVector& ts) { return benchmark::NoState(ts); }
 
   void raw_operation(benchmark::NoState& state) {
-    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
     assert(map != MAP_FAILED);
     ::munmap(map, size);
   }
 
   uint64_t measured_operation(benchmark::NoState& state) {
-    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    assert(map != MAP_FAILED);
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
     }
+    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+    assert(map != MAP_FAILED);
     ::munmap(map, size);
     if (clock_gettime(CLOCK_MONOTONIC, &end) < 0) {
       assert(0);
@@ -35,7 +35,7 @@ struct Action {
 
   bool supports_non_interference() { return true; }
 
-  bool supports_energy_measurement() { return false; }
+  bool supports_energy_measurement() { return true; }
 };
 
 

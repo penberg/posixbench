@@ -36,7 +36,7 @@ struct Action {
 
   bool supports_non_interference() { return true; }
 
-  bool supports_energy_measurement() { return true; }
+  bool supports_energy_measurement() { return false; }
 };
 
 
