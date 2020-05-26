@@ -12,7 +12,7 @@ struct Action {
     void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_HUGE_2MB, -1, 0);
     assert(map != MAP_FAILED);
     volatile char *p = reinterpret_cast<char*>(map);
-    asm volatile("movq (%0), %0\n\t" : : "a"(p) : "memory");
+    char tmp = *p;
     ::munmap(map, size);
   }
 
@@ -24,7 +24,7 @@ struct Action {
       assert(0);
     }
     volatile char *p = reinterpret_cast<char*>(map);
-    asm volatile("movq (%0), %0\n\t" : : "a"(p) : "memory");
+    char tmp = *p;
     if (clock_gettime(CLOCK_MONOTONIC, &end) < 0) {
       assert(0);
     }
