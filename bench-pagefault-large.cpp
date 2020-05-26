@@ -1,6 +1,7 @@
 #include "benchmark.h"
 
 #include <sys/mman.h>
+#include <linux/mman.h>
 
 static constexpr size_t size = 2 * 1024 * 1024; /* 2 MB */
 
@@ -8,7 +9,7 @@ struct Action {
   benchmark::NoState make_state(const benchmark::ThreadVector& ts) { return benchmark::NoState(ts); }
 
   void raw_operation(benchmark::NoState& state) {
-    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
+    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_HUGE_2MB, -1, 0);
     assert(map != MAP_FAILED);
     volatile char *p = reinterpret_cast<char*>(map);
     asm volatile("movq (%0), %0\n\t" : : "a"(p) : "memory");
@@ -16,7 +17,7 @@ struct Action {
   }
 
   uint64_t measured_operation(benchmark::NoState& state) {
-    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
+    void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_HUGE_2MB, -1, 0);
     assert(map != MAP_FAILED);
     struct timespec start, end;
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
