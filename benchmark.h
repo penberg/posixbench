@@ -238,23 +238,36 @@ class LatencyBenchmark {
       ::alarm(cfg.duration);
       alarm_fired = false;
 
+      uint64_t nr_samples = 0;
+
       while (!sigint_fired && !alarm_fired) {
         auto diff = action.measured_operation(state);
+	nr_samples++;
         assert(hdr_record_value(hist, diff));
       }
       stop.store(true);
+
       out << to_string(cfg.scenario);
       out << ",";
       out << "mean";
       out << ",";
       out << hdr_mean(hist);
       out << std::endl;
+
       out << to_string(cfg.scenario);
       out << ",";
       out << "stddev";
       out << ",";
       out << hdr_stddev(hist);
       out << std::endl;
+
+      out << to_string(cfg.scenario);
+      out << ",";
+      out << "samples";
+      out << ",";
+      out << nr_samples;
+      out << std::endl;
+
       for (size_t percentile = 1; percentile < 100; percentile++) {
         out << to_string(cfg.scenario);
 	out << ",";
