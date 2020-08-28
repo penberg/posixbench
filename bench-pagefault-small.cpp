@@ -2,7 +2,7 @@
 
 #include <sys/mman.h>
 
-static constexpr size_t size = 2 * 1024 * 1024; /* 2 MB */
+static constexpr size_t size = 4 * 1024; /* 4 KB */
 
 struct Action {
   benchmark::NoState make_state(const benchmark::ThreadVector& ts) { return benchmark::NoState(ts); }
