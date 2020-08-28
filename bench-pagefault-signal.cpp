@@ -1,4 +1,5 @@
 #include "benchmark.h"
+#include "memory.hh"
 
 #include <sys/mman.h>
 
@@ -42,8 +43,8 @@ struct Action {
   }
 
   void raw_operation(benchmark::NoState& state) {
-    volatile char *p = reinterpret_cast<char*>(map);
-    asm volatile("movq (%0), %0\n\t" : : "a"(p) : "memory");
+    auto *p = reinterpret_cast<volatile unsigned long*>(map);
+    memory::force_read(p);
   }
 
   uint64_t measured_operation(benchmark::NoState& state) {

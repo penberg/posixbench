@@ -1,4 +1,5 @@
 #include "benchmark.h"
+#include "memory.hh"
 
 #include <sys/mman.h>
 #include <linux/mman.h>
@@ -11,8 +12,8 @@ struct Action {
   void raw_operation(benchmark::NoState& state) {
     void *map = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_HUGE_2MB, -1, 0);
     assert(map != MAP_FAILED);
-    volatile char *p = reinterpret_cast<char*>(map);
-    char tmp = *p;
+    auto *p = reinterpret_cast<volatile unsigned long*>(map);
+    memory::force_read(p);
     ::munmap(map, size);
   }
 
@@ -23,8 +24,8 @@ struct Action {
     if (clock_gettime(CLOCK_MONOTONIC, &start) < 0) {
       assert(0);
     }
-    volatile char *p = reinterpret_cast<char*>(map);
-    char tmp = *p;
+    auto *p = reinterpret_cast<volatile unsigned long*>(map);
+    memory::force_read(p);
     if (clock_gettime(CLOCK_MONOTONIC, &end) < 0) {
       assert(0);
     }
