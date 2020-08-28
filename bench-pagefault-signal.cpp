@@ -17,8 +17,15 @@ static void sigaction_segv(int signal, siginfo_t *si, void *arg) {
 
   ucontext_t *ctx = (ucontext_t *) arg;
 
+#ifdef __x86_64__
   /* Let's jump over the "mov (%rax), %rax" instruction in raw_operation() */
   ctx->uc_mcontext.gregs[REG_RIP] += 3;
+#elif __aarch64__
+  /* Let's jump over the "ldr x0, [x0]" instruction in raw_operation() */
+  ctx->uc_mcontext.gregs[REG_PC] += 4;
+#else
+#error "Your architecture is not supported."
+#endif
 }
 
 struct Action {
