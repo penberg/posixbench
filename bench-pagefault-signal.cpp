@@ -5,7 +5,7 @@
 
 const size_t page_size = 4096;
 
-static thread_local uint64_t end_ns;
+static thread_local std::atomic<uint64_t> end_ns;
 
 static void sigaction_segv(int signal, siginfo_t *si, void *arg) {
   struct timespec end;
