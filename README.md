@@ -6,6 +6,10 @@ You need to configure your machine before running the benchmarks.
 
 **Disable TurboBoost.**
 
+```
+sudo ./scripts/turbo-boost.sh
+```
+
 **Disable CPU power saving mode:**
 
 ```
