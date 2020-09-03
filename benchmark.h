@@ -485,7 +485,9 @@ class EnergyBenchmark {
       snprintf(msr_path, PATH_MAX, "/dev/cpu/%d/msr", cpu);
       msr_fd = open(msr_path, O_RDONLY);
       if (msr_fd < 0) {
-        assert(0);
+        std::cerr << "warning: unable to measure energy (cannot open /dev/cpu/" << cpu << "/msr)" << std::endl;
+        stop.store(true);
+	return;
       }
       uint64_t power_unit = read_msr(MSR_RAPL_POWER_UNIT);
       double energy_unit = pow(0.5, (double)((power_unit >> 8) & 0x1f));
