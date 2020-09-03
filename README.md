@@ -15,7 +15,7 @@ sudo cpupower --cpu all frequency-set --governor performance
 **Configure huge pages:**
 
 ```
-sudo sysctl -w vm.nr_hugepages=512
+sudo ./scripts/hugepages.sh
 ```
 
 **Kill background processes and services.**
