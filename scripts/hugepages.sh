@@ -12,3 +12,5 @@ nr_hugepages=$(($hugepage_mb/(hugepage_size_kb / 1024)))
 echo "Reserving $hugepage_mb MB for hugepages, which is $nr_hugepages hugepages."
 
 sysctl -w vm.nr_hugepages=$nr_hugepages
+
+hugeadm --pool-pages-min 2MB:$nr_hugepages
