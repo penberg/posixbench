@@ -15,6 +15,7 @@ args = parser.parse_args()
 df = pd.read_csv(args.filename, delimiter=',', header=0)
 df = df.loc[df['percentile'] != 'mean']
 df = df.loc[df['percentile'] != 'stddev']
+df = df.loc[df['percentile'] != 'samples']
 df['percentile'] = df['percentile'].astype(float)
 df = df.loc[df['percentile'] <= 99]
 df['time'] = df['time'] / 1000
