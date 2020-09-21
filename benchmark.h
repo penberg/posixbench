@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fcntl.h>
+#include <libgen.h>
 #include <math.h>
 #include <pthread.h>
 #include <signal.h>
