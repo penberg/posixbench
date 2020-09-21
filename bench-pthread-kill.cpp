@@ -1,7 +1,5 @@
 #include "benchmark.h"
 
-#include <sys/eventfd.h>
-
 #include <deque>
 #include <vector>
 
