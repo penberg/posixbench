@@ -89,8 +89,10 @@ target_link_libraries(bench-munmap-populated-4kb ${LIBS})
 add_executable(bench-munmap-populated-2mb bench-munmap-populated-2mb.cpp)
 target_link_libraries(bench-munmap-populated-2mb ${LIBS})
 
+if(CMAKE_SYSTEM_NAME STREQUAL Linux)
 add_executable(bench-eventfd bench-eventfd.cpp)
 target_link_libraries(bench-eventfd ${LIBS})
 
 add_executable(bench-eventfd-nonblock bench-eventfd-nonblock.cpp)
 target_link_libraries(bench-eventfd-nonblock ${LIBS})
+endif()
