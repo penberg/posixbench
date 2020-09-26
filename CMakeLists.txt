@@ -84,11 +84,13 @@ target_link_libraries(bench-mmap-munmap-4kb ${LIBS})
 add_executable(bench-mmap-munmap-2mb bench-mmap-munmap-2mb.cpp)
 target_link_libraries(bench-mmap-munmap-2mb ${LIBS})
 
+if(CMAKE_SYSTEM_NAME STREQUAL Linux)
 add_executable(bench-mmap-populate-munmap-4kb bench-mmap-populate-munmap-4kb.cpp)
 target_link_libraries(bench-mmap-populate-munmap-4kb ${LIBS})
 
 add_executable(bench-mmap-populate-munmap-2mb bench-mmap-populate-munmap-2mb.cpp)
 target_link_libraries(bench-mmap-populate-munmap-2mb ${LIBS})
+endif()
 
 add_executable(bench-mmap-4kb bench-mmap-4kb.cpp)
 target_link_libraries(bench-mmap-4kb ${LIBS})
@@ -102,6 +104,7 @@ target_link_libraries(bench-mmap-2mb ${LIBS})
 add_executable(bench-munmap-2mb bench-munmap-2mb.cpp)
 target_link_libraries(bench-munmap-2mb ${LIBS})
 
+if(CMAKE_SYSTEM_NAME STREQUAL Linux)
 add_executable(bench-mmap-populate-4kb bench-mmap-populate-4kb.cpp)
 target_link_libraries(bench-mmap-populate-4kb ${LIBS})
 
@@ -113,6 +116,7 @@ target_link_libraries(bench-mmap-populate-2mb ${LIBS})
 
 add_executable(bench-munmap-populated-2mb bench-munmap-populated-2mb.cpp)
 target_link_libraries(bench-munmap-populated-2mb ${LIBS})
+endif()
 
 #
 # mprotect
