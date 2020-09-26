@@ -115,6 +115,8 @@ struct SymmetricAction {
 static constexpr int DEFAULT_NR_INTERFERING_THREADS = 1;
 
 struct Config {
+  /// Measuring CPU.
+  int measuring_cpu;
   /// Test scenario.
   Scenario scenario;
   /// Number of interfering threads.
@@ -197,7 +199,7 @@ class LatencyBenchmark {
     hwloc_topology_t topology;
     hwloc_topology_init(&topology);
     hwloc_topology_load(topology);
-    hwloc_obj_t pu = hwloc_get_obj_by_type(topology, HWLOC_OBJ_PU, 0);
+    hwloc_obj_t pu = hwloc_get_obj_by_type(topology, HWLOC_OBJ_PU, cfg.measuring_cpu);
     std::optional<hwloc_obj_t> other_pu;
     if (cfg.scenario != NO_INTERFERENCE) {
         other_pu = find_other_pu(topology, pu, cfg.scenario);
@@ -307,8 +309,9 @@ class LatencyBenchmark {
 };
 
 template <typename T>
-static void run_latency_benchmark(const std::string benchmark, Scenario scenario, int duration, std::ostream& out) {
+static void run_latency_benchmark(const std::string benchmark, int measuring_cpu, Scenario scenario, int duration, std::ostream& out) {
   Config cfg;
+  cfg.measuring_cpu = measuring_cpu;
   cfg.benchmark = benchmark;
   cfg.scenario = scenario;
   cfg.duration = duration;
@@ -317,25 +320,33 @@ static void run_latency_benchmark(const std::string benchmark, Scenario scenario
 }
 
 template <typename T>
-static void run_latency_benchmarks(const std::string benchmark, Interference interference, int duration, std::ostream& out) {
+static void run_latency_benchmarks(const std::string benchmark, int measuring_cpu, Interference interference, int duration, std::ostream& out) {
   out << "scenario,percentile,time" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
-    run_latency_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, duration, out);
+    run_latency_benchmark<T>(benchmark, measuring_cpu, Scenario::REMOTE_PACKAGE, duration, out);
   }
   if (interference & Interference::REMOTE_CORE) {
-    run_latency_benchmark<T>(benchmark, Scenario::REMOTE_CORE, duration, out);
+    run_latency_benchmark<T>(benchmark, measuring_cpu, Scenario::REMOTE_CORE, duration, out);
   }
   if (interference & Interference::LOCAL_CORE) {
-    run_latency_benchmark<T>(benchmark, Scenario::LOCAL_CORE, duration, out);
+    run_latency_benchmark<T>(benchmark, measuring_cpu, Scenario::LOCAL_CORE, duration, out);
   }
   if (interference & Interference::NONE) {
-    run_latency_benchmark<T>(benchmark, Scenario::NO_INTERFERENCE, duration, out);
+    run_latency_benchmark<T>(benchmark, measuring_cpu, Scenario::NO_INTERFERENCE, duration, out);
   }
 }
 
 static void usage(std::string program)
 {
-  std::cout << "usage: " << program << " [-i <interference>] [-l <latency-output>] [-d <latency-duration>] [-e <energy-output>] [-s <energy samples>]" << std::endl;
+  std::cout << "usage: "
+	    << program
+	    << " [-m <measuring-cpu>]"
+	    << " [-i <interference>]"
+	    << " [-l <latency-output>]"
+	    << " [-d <latency-duration>]"
+	    << " [-e <energy-output>]"
+	    << " [-s <energy samples>]"
+	    << std::endl;
 }
 
 /* RAPL MSRs  */
@@ -374,6 +385,8 @@ inline void wait_for_rapl_sampling_period_begin() {
 }
 
 struct EnergyConfig {
+  /// Measuring CPU.
+  int measuring_cpu;
   /// Test scenario.
   Scenario scenario;
   /// Number of interfering threads.
@@ -447,7 +460,7 @@ class EnergyBenchmark {
     hwloc_topology_t topology;
     hwloc_topology_init(&topology);
     hwloc_topology_load(topology);
-    hwloc_obj_t pu = hwloc_get_obj_by_type(topology, HWLOC_OBJ_PU, 0);
+    hwloc_obj_t pu = hwloc_get_obj_by_type(topology, HWLOC_OBJ_PU, cfg.measuring_cpu);
     std::optional<hwloc_obj_t> other_pu;
     if (cfg.scenario != NO_INTERFERENCE) {
       other_pu = find_other_pu(topology, pu, cfg.scenario);
@@ -530,8 +543,9 @@ class EnergyBenchmark {
 };
 
 template <typename T>
-static void run_energy_benchmark(std::string benchmark, Scenario scenario, int nr_samples, std::ostream& out) {
+static void run_energy_benchmark(std::string benchmark, int measuring_cpu, Scenario scenario, int nr_samples, std::ostream& out) {
   EnergyConfig cfg;
+  cfg.measuring_cpu = measuring_cpu;
   cfg.benchmark = benchmark;
   cfg.scenario = scenario;
   cfg.nr_samples = nr_samples;
@@ -540,19 +554,19 @@ static void run_energy_benchmark(std::string benchmark, Scenario scenario, int n
 }
 
 template <typename T>
-static void run_energy_benchmarks(std::string benchmark, Interference interference, int nr_samples, std::ostream &out) {
+static void run_energy_benchmarks(std::string benchmark, int measuring_cpu, Interference interference, int nr_samples, std::ostream &out) {
   out << "Benchmark,Scenario,Operations,DurationPerOperation(ns),PackageEnergyPerOperation(nJ),DRAMEnergyPerOperation(nJ)" << std::endl;
   if (interference & Interference::REMOTE_PACKAGE) {
-    run_energy_benchmark<T>(benchmark, Scenario::REMOTE_PACKAGE, nr_samples, out);
+    run_energy_benchmark<T>(benchmark, measuring_cpu, Scenario::REMOTE_PACKAGE, nr_samples, out);
   }
   if (interference & Interference::REMOTE_CORE) {
-    run_energy_benchmark<T>(benchmark, Scenario::REMOTE_CORE, nr_samples, out);
+    run_energy_benchmark<T>(benchmark, measuring_cpu, Scenario::REMOTE_CORE, nr_samples, out);
   }
   if (interference & Interference::LOCAL_CORE) {
-    run_energy_benchmark<T>(benchmark, Scenario::LOCAL_CORE, nr_samples, out);
+    run_energy_benchmark<T>(benchmark, measuring_cpu, Scenario::LOCAL_CORE, nr_samples, out);
   }
   if (interference & Interference::NONE) {
-    run_energy_benchmark<T>(benchmark, Scenario::NO_INTERFERENCE, nr_samples, out);
+    run_energy_benchmark<T>(benchmark, measuring_cpu, Scenario::NO_INTERFERENCE, nr_samples, out);
   }
 }
 
@@ -592,14 +606,18 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
   ::sigaction(SIGALRM, &sa_alrm, nullptr);
 
   std::string program = ::basename(argv[0]);
-	std::string raw_interference = "all";
+  int measuring_cpu = 0;
+  std::string raw_interference = "all";
   std::optional<std::string> latency_output;
   std::optional<int> duration;
   std::optional<std::string> energy_output;
   std::optional<int> nr_samples;
   int c;
-  while ((c = getopt(argc, argv, "i:l:d:e:s:")) != -1) {
+  while ((c = getopt(argc, argv, "m:i:l:d:e:s:")) != -1) {
     switch (c) {
+      case 'm':
+        measuring_cpu = strtol(optarg, nullptr, 10);
+        break;
       case 'i':
         raw_interference = optarg;
         break;
@@ -629,13 +647,13 @@ static void run_all(int argc, char *argv[], std::optional<std::function<void(siz
       constexpr int DEFAULT_DURATION = 30;
       std::ofstream output;
       output.open(*latency_output);
-      run_latency_benchmarks<T>(program, interference, duration.value_or(DEFAULT_DURATION), output);
+      run_latency_benchmarks<T>(program, measuring_cpu, interference, duration.value_or(DEFAULT_DURATION), output);
     }
     if (energy_output) {
       constexpr int DEFAULT_NR_SAMPLES = 30;
       std::ofstream output;
       output.open(*energy_output);
-      run_energy_benchmarks<T>(program, interference, nr_samples.value_or(DEFAULT_NR_SAMPLES), output);
+      run_energy_benchmarks<T>(program, measuring_cpu, interference, nr_samples.value_or(DEFAULT_NR_SAMPLES), output);
     }
   } catch (const std::exception& e) {
     std::cerr << "error: " << e.what() << std::endl;
