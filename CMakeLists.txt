@@ -29,6 +29,9 @@ target_link_libraries(bench-gettime ${LIBS})
 add_executable(bench-open bench-open.cpp)
 target_link_libraries(bench-open ${LIBS})
 
+add_executable(bench-close bench-close.cpp)
+target_link_libraries(bench-close ${LIBS})
+
 #
 # pthreads
 #
